@@ -159,3 +159,18 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
   - Workflow artık küçük URL format farklarında fail etmek yerine payload'u güvenli şekilde normalize ederek blog üretimini tamamlar.
 - SEO/Sitemap kontrolü:
   - Yeni route eklenmedi; `public/sitemap.xml` içinde `/`, `/#/shop`, `/#/blog` mevcut ve yeterli.
+
+## Son Görev Özeti (2026-02-11 / Blog Kaynak Eşleme Dayanıklılık Güncellemesi)
+- Kullanıcı geri bildirimi: `generate-daily-blog` job'ı halen `ValueError: section sourceUrl not in provided sources` ile düşüyordu.
+- Kök neden:
+  - `sections.sourceTitle` alanında küçük format farkları (fazla boşluk, büyük/küçük harf farkı) olduğunda mevcut title->URL fallback eşleşemiyordu.
+  - `trendValidation.evidenceSources` tarafında URL eşleme logic'i section logic'inden ayrıydı; davranışlar tam tutarlı değildi.
+- Yapılanlar:
+  - `scripts/gemini_daily_fashion_blog.py` içine `_normalize_title_for_match` eklendi; title eşleşmesi whitespace + case normalize edilerek daha toleranslı hale getirildi.
+  - `scripts/gemini_daily_fashion_blog.py` içine `_resolve_source_url` eklendi; section ve evidence URL doğrulaması ortak bir resolver üstünden çalışacak şekilde birleştirildi.
+  - `enforce_payload_rules` içinde section `sourceUrl` ve `trendValidation.evidenceSources` alanları aynı sıralı mantıkla çözülüyor: direct URL -> normalized URL map -> sourceTitle map -> güvenli fallback.
+  - Boş/mismatch evidence listelerinde güvenli fallback olarak canonical ilk makale URL'si atanarak job kırılması engellendi.
+- Beklenen sonuç:
+  - Workflow, Gemini çıktısındaki URL/title format sapmalarına rağmen payload'u normalize ederek üretime devam eder.
+- SEO/Sitemap kontrolü:
+  - Yeni route eklenmedi; `public/sitemap.xml` kontrol edildi, `/`, `/#/shop`, `/#/blog` mevcut ve yeterli.
