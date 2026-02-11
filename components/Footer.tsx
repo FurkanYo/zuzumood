@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 export const Footer: React.FC = () => {
   return (
@@ -17,9 +18,9 @@ export const Footer: React.FC = () => {
           <div>
             <h4 className="text-[10px] font-bold uppercase tracking-[0.4em] mb-8">The Archive</h4>
             <ul className="space-y-4 text-[10px] text-muted uppercase tracking-[0.2em]">
-              <li className="hover:text-black transition-colors cursor-pointer underline-offset-4 hover:underline">Explore All Pieces</li>
+              <li><Link to="/shop" className="hover:text-black transition-colors underline-offset-4 hover:underline">Explore All Pieces</Link></li>
               <li><a href="https://www.etsy.com/shop/ZuzuMood" target="_blank" rel="noreferrer" className="hover:text-black transition-colors underline-offset-4 hover:underline">Official Etsy Store</a></li>
-              <li className="hover:text-black transition-colors cursor-pointer underline-offset-4 hover:underline">Original Designs</li>
+              <li><Link to="/blog" className="hover:text-black transition-colors underline-offset-4 hover:underline">Daily Blog</Link></li>
             </ul>
           </div>
 
