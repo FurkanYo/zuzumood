@@ -451,3 +451,20 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
   - `/admin` eklenmedi.
   - Blog post query URL'leri ve ürün detay URL'leri eklendi.
   - `robots.txt` içindeki `Disallow: /admin` kuralı korunur.
+
+## Son Görev Özeti (2026-02-11 / Sitemap Erişim Hatası: `/public/sitemap.xml` ve `www` Canonical Düzeltmesi)
+- Kullanıcı geri bildirimi:
+  - Google Search Console'da sitemap URL'i `https://www.zuzumood.com/public/sitemap.xml` olarak gönderildiğinde "Konnte nicht abgerufen werden" hatası alındı.
+- Kök neden:
+  - Vite/Static deploy'da `public/` klasörü yayın köküne kopyalanır; canlı URL `.../public/sitemap.xml` değil doğrudan `.../sitemap.xml` olmalıdır.
+  - Projede canonical domain `https://zuzumood.com` olarak kullanılıyor; `www` varyantı host yapılandırmasına bağlı olarak doğrudan erişilebilir olmayabilir.
+- Yapılanlar:
+  - `public/_redirects` eklendi.
+  - ` /public/sitemap.xml -> /sitemap.xml ` için 301 redirect tanımlandı.
+  - `https://www.zuzumood.com/* -> https://zuzumood.com/:splat` için zorunlu canonical redirect tanımlandı.
+- Beklenen sonuç:
+  - Yanlış gönderilen legacy sitemap path'i otomatik doğru dosyaya düşer.
+  - `www` ile gelen sitemap/URL istekleri canonical non-www domaine normalize olur.
+- SEO/Sitemap kontrolü:
+  - Yeni route eklenmedi.
+  - `public/sitemap.xml` ve `public/robots.txt` kontrol edildi; sitemap bildirimi `https://zuzumood.com/sitemap.xml` olarak doğru.
