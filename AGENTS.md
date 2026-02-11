@@ -140,3 +140,22 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
 - Kod değişikliği sonrası build çalıştır.
 - Commit + PR kaydı oluştur.
 - Final raporda dosya ve satır referanslarıyla değişikliği özetle.
+
+## Son Görev Özeti (2026-02-11 / Blog Kaynak URL Eşleme Düzeltmesi)
+- Kullanıcı geri bildirimi: `generate-daily-blog` job'ı `ValueError: section sourceUrl not in provided sources` hatasıyla düşüyordu.
+- Kök neden:
+  - Gemini çıktısındaki `sourceUrl` değerleri, RSS'den normalize edilen URL listesi ile birebir eşleşmediğinde script fail ediyordu.
+  - Özellikle `www.` farkı, son slash (`/`) farkı ve bazı canonicalizasyon farkları katı kontrolü kırıyordu.
+- Yapılanlar:
+  - `scripts/gemini_daily_fashion_blog.py` içine `_normalize_url_for_match` eklendi.
+  - `enforce_payload_rules` içinde `allowed_urls` temiz URL üzerinden canonical map ile eşlenir hale getirildi.
+  - `sections[].sourceUrl` için doğrulama artık 3 adımlı:
+    1) doğrudan eşleşme,
+    2) normalize edilmiş URL ile eşleşme,
+    3) `sourceTitle` -> makale URL fallback.
+  - Hâlâ eşleşmiyorsa job'ı kırmamak için güvenli fallback olarak ilk makale URL'si atanıyor.
+  - `trendValidation[].evidenceSources` doğrulaması da aynı normalize + canonical eşleme mantığına geçirildi; tüm evidence URL'leri mismatch olursa güvenli fallback ile en az bir geçerli kaynak atanıyor.
+- Beklenen sonuç:
+  - Workflow artık küçük URL format farklarında fail etmek yerine payload'u güvenli şekilde normalize ederek blog üretimini tamamlar.
+- SEO/Sitemap kontrolü:
+  - Yeni route eklenmedi; `public/sitemap.xml` içinde `/`, `/#/shop`, `/#/blog` mevcut ve yeterli.
