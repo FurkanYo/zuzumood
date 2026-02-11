@@ -1,34 +1,62 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { PRODUCTS, CATEGORIES } from '../services/data';
 import { ProductCard } from '../components/ProductCard';
 
+const normalizeCategoryParam = (value: string | null) => {
+  if (!value) {
+    return 'all';
+  }
+
+  const normalized = value
+    .toLowerCase()
+    .trim()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, '-');
+
+  if (normalized === 'all' || normalized === 'all-products') {
+    return 'all';
+  }
+
+  const matchById = CATEGORIES.find((category) => category.id === normalized);
+  if (matchById) {
+    return matchById.id;
+  }
+
+  const matchByName = CATEGORIES.find((category) => {
+    const normalizedName = category.name
+      .toLowerCase()
+      .replace(/&/g, 'and')
+      .replace(/[^a-z0-9]+/g, '-');
+    return normalizedName === normalized;
+  });
+
+  return matchByName?.id ?? 'all';
+};
+
 export const Shop: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const currentCategory = searchParams.get('cat') || 'all';
+  const currentCategory = normalizeCategoryParam(searchParams.get('cat'));
   const searchQuery = searchParams.get('q') || '';
-  const [filteredProducts, setFilteredProducts] = useState(PRODUCTS);
 
-  useEffect(() => {
+  const filteredProducts = useMemo(() => {
     let result = PRODUCTS;
 
-    // Filter by Category
     if (currentCategory !== 'all') {
-      result = result.filter(p => p.category === currentCategory);
+      result = result.filter((product) => product.category === currentCategory);
     }
 
-    // Filter by Search Query
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
-      result = result.filter(p => 
-        p.title.toLowerCase().includes(q) || 
-        p.description.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q) ||
-        p.details.some(d => d.toLowerCase().includes(q))
+      result = result.filter((product) =>
+        product.title.toLowerCase().includes(q) ||
+        product.description.toLowerCase().includes(q) ||
+        product.category.toLowerCase().includes(q) ||
+        product.details.some((detail) => detail.toLowerCase().includes(q))
       );
     }
 
-    setFilteredProducts(result);
+    return result;
   }, [currentCategory, searchQuery]);
 
   const activeCategoryName = CATEGORIES.find(c => c.id === currentCategory)?.name || 'All Products';

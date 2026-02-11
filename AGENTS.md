@@ -340,3 +340,28 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
 - SEO/Sitemap kontrolü:
   - Yeni route eklenmedi.
   - `public/sitemap.xml` tekrar kontrol edildi; mevcut route seti yeterli, ek güncelleme gerekmedi.
+
+## Son Görev Özeti (2026-02-11 / Shop Filtreleme Düzeltmesi + Blog Metin Sadeleştirme + Admin Rapor Kalite Artışı)
+- Kullanıcı geri bildirimi:
+  - Shop menülerinden kategori seçildiğinde alt ürün grid'i beklenen şekilde güncellenmiyordu.
+  - Ana sayfadaki "Daily US Fashion + Etsy SEO Blog" ifadesinden "Etsy SEO Blog" kısmının kaldırılması istendi.
+  - Otomatik admin içerik üreticisinin, tasarım ekibinin "hangi tekstil ürünleri satılmalı / hangi tasarımlar yapılmalı" sorularına daha kaliteli ve uygulanabilir yanıt vermesi istendi.
+- Yapılanlar:
+  - `pages/Shop.tsx` içinde kategori parametresi daha toleranslı hale getirildi (`normalizeCategoryParam`):
+    - `cat` değeri slug/name farklılıklarına karşı normalize ediliyor,
+    - `all-products` gibi varyasyonlar güvenli şekilde `all` kategorisine eşleniyor,
+    - filtreleme akışı `useMemo` ile doğrudan URL parametresine bağlı stabil çalışacak şekilde sadeleştirildi.
+  - `pages/Home.tsx` içinde blog bölüm başlığı "Daily US Fashion" olarak güncellendi; Etsy SEO ifadesi kaldırıldı.
+  - `scripts/gemini_admin_trend_report.py` içinde admin trend botu genişletildi:
+    - Prompt seviyesinde tasarımcı sorularına doğrudan yanıt üretme zorunluluğu eklendi.
+    - JSON şemasına `textileProductStrategy` (satılabilir ürün tipi + tasarım yönü + fiyat bandı + üretim notu) alanı eklendi.
+    - JSON şemasına `designerQa` (soru-cevap) alanı eklendi.
+    - `enforce_payload_rules` katmanında bu yeni alanlara kalite/fallback guard'ları eklendi.
+    - Markdown çıktısına "Satılabilir Tekstil Ürün Stratejisi" ve "Tasarımcı Soru-Cevap" bölümleri eklendi.
+- Beklenen sonuç:
+  - Shop kategori seçimleri farklı URL/slug varyasyonlarında da güvenilir şekilde filtre uygular.
+  - Ana sayfada Etsy SEO ifadesi görünmez.
+  - Admin raporları artık doğrudan ürün önceliği, tasarım yönü ve ekip içi karar desteği sağlayan daha güçlü içerik üretir.
+- SEO/Sitemap kontrolü:
+  - Yeni route eklenmedi.
+  - `public/sitemap.xml` kontrol edildi; mevcut route seti yeterli, ek güncelleme gerekmedi.

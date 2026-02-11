@@ -163,7 +163,7 @@ def build_report_payload(client: genai.Client, articles: list[Article], date_str
 You are the internal strategy analyst for ZuzuMood design team.
 Return ONLY valid JSON.
 Research signals must come from US market sources, but ALL narrative fields in output must be Turkish.
-Focus on what can sell on Etsy in the US market.
+Focus on what can sell on Etsy in the US market.\nAnswer designer-facing questions explicitly: which textile-based product types to prioritize, what visual direction to design, and why those decisions can convert in the next 30 days.
 
 Date: {date_str}
 
@@ -298,6 +298,95 @@ def enforce_payload_rules(payload: dict[str, Any], articles: list[Article], date
             "Bir sonraki rapor döngüsüne kadar satış ve favori artışını takip edin.",
         ][: 4 - len(payload["actionChecklist"])]
 
+    textile_strategy = payload.get("textileProductStrategy")
+    if not isinstance(textile_strategy, list):
+        textile_strategy = []
+
+    normalized_textile_strategy: list[dict[str, str]] = []
+    for item in textile_strategy[:5]:
+        if not isinstance(item, dict):
+            continue
+        product_type = str(item.get("textileProductType") or "").strip()
+        why_sell_now = str(item.get("whySellNow") or "").strip()
+        design_direction = str(item.get("designDirection") or "").strip()
+        price_band = str(item.get("priceBandUsd") or "").strip()
+        production_note = str(item.get("productionNote") or "").strip()
+        if product_type:
+            normalized_textile_strategy.append(
+                {
+                    "textileProductType": product_type,
+                    "whySellNow": why_sell_now or "ABD arama niyeti ve mevsim etkisi bu ürün tipinde hızlı dönüşüm potansiyeli yaratıyor.",
+                    "designDirection": design_direction or "Tipografi ve motifi sade ama fark edilir tutun; kullanım senaryosunu ürün görselinde net anlatın.",
+                    "priceBandUsd": price_band or "28-42",
+                    "productionNote": production_note or "Baskı yoğunluğu orta seviyede tutulup hızlı teslim edilebilir varyant sayısı artırılmalı.",
+                }
+            )
+
+    if len(normalized_textile_strategy) < 4:
+        normalized_textile_strategy += [
+            {
+                "textileProductType": "Comfort Colors premium t-shirt",
+                "whySellNow": "Yaz sezonuna geçişte günlük kullanıma uygun hafif ürün aramaları yükseliyor.",
+                "designDirection": "Ön göğüs minimal sembol + sırtta hikâye anlatan kısa mesaj kompozisyonu kullanın.",
+                "priceBandUsd": "28-38",
+                "productionNote": "2 nötr + 1 trend renk paletiyle hızlı test yayınına çıkın.",
+            },
+            {
+                "textileProductType": "Midweight unisex hoodie",
+                "whySellNow": "Akşam etkinliği ve seyahat temalı satın alma niyeti için yıl boyu güçlü kategori.",
+                "designDirection": "Tipografide el yazısı + serif kombinasyonu ile duygusal ama premium görünüm hedefleyin.",
+                "priceBandUsd": "44-62",
+                "productionNote": "Aynı tasarımın 2 baskı boyutlu varyantını çıkararak CTR testi yapın.",
+            },
+            {
+                "textileProductType": "Bridal getting-ready sweatshirt",
+                "whySellNow": "Bridal shower ve bachelorette aramaları etkinlik takvimleriyle paralel artıyor.",
+                "designDirection": "İnce çizgi illüstrasyon + kişiselleştirilebilir isim/tarih alanı ekleyin.",
+                "priceBandUsd": "36-52",
+                "productionNote": "Sipariş formunda isim ve tarih formatını doğrulayan net alanlar kullanın.",
+            },
+            {
+                "textileProductType": "Teacher tote + tee mini set",
+                "whySellNow": "Dönem geçişlerinde hediye odaklı ve pratik kullanım ürünlerine talep yükseliyor.",
+                "designDirection": "Aynı motif ailesini hem tote hem tee üzerinde ölçek farkıyla uygulayın.",
+                "priceBandUsd": "24-46",
+                "productionNote": "Set ve tekli ürün listelemesini ayrı yapıp çapraz satış bağlantısı kurun.",
+            },
+        ][: 4 - len(normalized_textile_strategy)]
+
+    payload["textileProductStrategy"] = normalized_textile_strategy[:5]
+
+    designer_qa = payload.get("designerQa")
+    if not isinstance(designer_qa, list):
+        designer_qa = []
+
+    normalized_qa: list[dict[str, str]] = []
+    for item in designer_qa[:4]:
+        if not isinstance(item, dict):
+            continue
+        question = str(item.get("question") or "").strip()
+        answer = str(item.get("answer") or "").strip()
+        if question and answer:
+            normalized_qa.append({"question": question, "answer": answer})
+
+    if len(normalized_qa) < 3:
+        normalized_qa += [
+            {
+                "question": "Bu hafta ZuzuMood hangi tekstil ürünlerini önceliklendirmeli?",
+                "answer": "Öncelik sırası: premium t-shirt, bridal sweatshirt ve midweight hoodie olmalı. Bu üçlü hem yıl boyu aranıyor hem de kişiselleştirme ile sepet tutarını artırıyor.",
+            },
+            {
+                "question": "Tasarımlarda hangi görsel dil daha iyi dönüşüm getirir?",
+                "answer": "Tek ana fikirli, uzaktan okunabilen tipografi + tek vurgu illüstrasyonu en stabil sonuç verir. Kalabalık kompozisyon yerine sade ama karakterli yerleşim tercih edin.",
+            },
+            {
+                "question": "ZuzuMood nasıl daha hızlı test ve öğrenme yapabilir?",
+                "answer": "Her konsept için 2 renk ve 2 mockup varyantı ile 7 günlük mini test açın; favori oranı ve tıklama verisine göre kazanan tasarımı genişletin.",
+            },
+        ][: 3 - len(normalized_qa)]
+
+    payload["designerQa"] = normalized_qa[:4]
+
     return payload
 
 
@@ -355,6 +444,32 @@ def to_markdown(payload: dict[str, Any], date_iso: str) -> str:
             "## Aksiyon Kontrol Listesi",
             "",
             *[f"- {item}" for item in payload["actionChecklist"]],
+            "",
+            "## Satılabilir Tekstil Ürün Stratejisi",
+            "",
+            *[
+                line
+                for item in payload["textileProductStrategy"]
+                for line in [
+                    f"### {item['textileProductType']}",
+                    "",
+                    f"- **Neden şimdi satılır:** {item['whySellNow']}",
+                    f"- **Tasarım yönü:** {item['designDirection']}",
+                    f"- **Önerilen fiyat bandı (USD):** {item['priceBandUsd']}",
+                    f"- **Üretim notu:** {item['productionNote']}",
+                    "",
+                ]
+            ],
+            "## Tasarımcı Soru-Cevap",
+            "",
+            *[
+                line
+                for item in payload["designerQa"]
+                for line in [
+                    f"- **Soru:** {item['question']}",
+                    f"  **Yanıt:** {item['answer']}",
+                ]
+            ],
             "",
             "---",
             "",
