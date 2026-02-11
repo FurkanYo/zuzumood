@@ -280,3 +280,20 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
 - SEO/Sitemap kontrolü:
   - Yeni route eklendiği için `public/sitemap.xml` güncellendi (`/#/terms`, `/#/privacy`).
   - `public/robots.txt` kontrol edildi; `/admin` disallow korunuyor.
+
+## Son Görev Özeti (2026-02-11 / Admin Route Erişim Düzeltmesi)
+- Kullanıcı geri bildirimi:
+  - Production ortamında `/admin` URL'i açıldığında admin paneli yerine ham JSON (`public/admin/index.json`) görünüyordu.
+- Kök neden:
+  - Uygulama `HashRouter` kullandığı için gerçek panel route'u `/#/admin`.
+  - Statik host tarafında `/admin` path'i `public/admin` klasörüyle çakıştığından dizindeki JSON dosyası render oluyordu.
+- Yapılanlar:
+  - `public/admin/index.html` eklendi.
+  - Bu dosyada güvenli bir client-side redirect ile `/admin` istekleri otomatik olarak `/#/admin` adresine yönlendirildi.
+  - Sayfa `noindex,nofollow` olarak işaretlendi; gizli admin alanı SEO indeksine taşınmadı.
+- Beklenen sonuç:
+  - Kullanıcı `/admin` yazsa bile panel login ekranına (`/#/admin`) yönlenir.
+  - Ham JSON görüntülenmesi engellenir.
+- SEO/Sitemap kontrolü:
+  - Yeni route eklenmedi.
+  - `public/sitemap.xml` kontrol edildi; `/admin` bilinçli olarak gizli tutulduğu için sitemap'e eklenmedi.

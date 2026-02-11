@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>Redirecting to Admin</title>
+    <script>
+      (function redirectToHashAdmin() {
+        var target = '/#/admin';
+        var search = window.location.search || '';
+        var hash = window.location.hash || '';
+        if (hash && hash !== '#') {
+          window.location.replace('/' + hash);
+          return;
+        }
+        window.location.replace(target + search);
+      })();
+    </script>
+  </head>
+  <body></body>
+</html>
