@@ -83,6 +83,9 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
    - Script default olarak `public/blog/images/default-fashion.svg` kullanır; pipeline durmaz.
 4. Blog JSON parse hatası olursa:
    - Gemini promptundaki strict JSON şeması bozulmuş olabilir; promptu sadeleştir.
+5. Workflow push adımı `non-fast-forward` ile düşerse:
+   - Commit öncesi `git pull --rebase origin ${GITHUB_REF_NAME}` çalıştırılıp ardından `git push origin HEAD:${GITHUB_REF_NAME}` kullanılmalı.
+   - Böylece aynı dalda eşzamanlı commit geldiğinde workflow kırılmaz.
 
 ## Geliştirme Komutları
 - `npm install`
@@ -115,6 +118,23 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
   - Footer'daki "Explore All Pieces" metni de gerçek route (`/shop`) linki olacak şekilde düzeltildi.
 - SEO/Sitemap kontrolü:
   - Yeni route eklenmedi; `public/sitemap.xml` içinde `/#/blog` zaten mevcut, ek değişiklik gerekmedi.
+
+## Son Görev Özeti (2026-02-11 / Blog Bot Revizyonu)
+- Kullanıcı geri bildirimi: `generate-daily-blog` job'ı içerik üretiminden sonra push aşamasında `non-fast-forward` hatasıyla düşüyordu; ayrıca blog üretim promptunun Google Discover + Pinterest + long-tail bridal/women SEO hedeflerine göre güncellenmesi istendi.
+- Yapılanlar:
+  - `.github/workflows/daily-fashion-blog.yml` içinde push adımı rebase-safe hale getirildi (`git pull --rebase` + branch'e explicit push).
+  - `scripts/gemini_daily_fashion_blog.py` promptu tamamen US bridal/women trend stratejisine göre yenilendi.
+  - Script artık tek bir genel trend özeti yerine:
+    - döngülü içerik tipi seçimi,
+    - 1 ana + 5 destekleyici long-tail keyword,
+    - trend doğrulama (en az 2 sinyal kuralı),
+    - editorial tonlu section yapısı,
+    - 800+ kelime kontrolü,
+    - kaynak URL doğrulaması
+    ile içerik üretimini zorunlu kılıyor.
+  - Markdown frontmatter alanları keyword/contentType bilgisiyle genişletildi (`locale: en-US`, bridal trend odaklı kategori).
+- SEO/Sitemap kontrolü:
+  - Yeni route eklenmedi, bu yüzden `public/sitemap.xml` güncellemesi gerekmedi.
 
 ## Teslim Standartları
 - Kod değişikliği sonrası build çalıştır.
