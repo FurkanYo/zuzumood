@@ -4,7 +4,7 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
 
 ## Proje Özeti
 - Proje: **ZuzuMood** (React + TypeScript + Vite).
-- Router: `HashRouter` (`/#/shop`, `/#/product/:id`).
+- Router: `HashRouter` (`/#/shop`, `/#/blog`, `/#/product/:id`).
 - Ürün kaynağı: **tek kaynak** `products/EtsyListingsDownload.csv`.
 - Ürün datası runtime'da `services/data.ts` içinde CSV parse edilerek üretiliyor.
 - AI chat: `components/AIStylist.tsx` içinde Gemini (`@google/genai`) ile çalışıyor.
@@ -37,6 +37,7 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
 - `products/EtsyListingsDownload.csv`: Etsy export verisi (tek gerçek kaynak).
 - `components/AIStylist.tsx`: Gemini entegrasyonu, chat UI, öneri ürünleri.
 - `pages/Shop.tsx`, `pages/Home.tsx`, `pages/ProductDetail.tsx`: Ürün verisini `PRODUCTS` üzerinden kullanır.
+- `pages/Blog.tsx`: `public/blog/index.json` ve markdown dosyalarını okuyup blog UI render eder.
 - `public/sitemap.xml`, `public/robots.txt`: SEO tarama yapılandırması.
 - `vite.config.ts`: env yükleme + anahtar inject + alias.
 - `vite-env.d.ts`: Vite `import.meta.env` ve global define tipleri.
@@ -56,7 +57,8 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
 - `public/sitemap.xml` en az `/` ve `/#/shop` içerir.
 - Yeni route eklendiğinde `sitemap.xml` ve gerekirse `robots.txt` güncellenmelidir.
 - HashRouter kullanıldığı için canonical ve sosyal paylaşım meta stratejisi ayrıca değerlendirilmelidir.
-- Blog otomasyonu şu an `public/blog/*.md` üretir; bu dosyalar route değil statik çıktı olduğu için sitemap’a otomatik eklenmez.
+- Blog içerikleri `/#/blog` route'unda runtime fetch ile gösterilir (`public/blog/index.json` + markdown).
+- HashRouter kullanımı nedeniyle blog postları query param (`/#/blog?post=<slug>`) ile açılır.
 
 ## Chatbot Troubleshooting
 1. Tarayıcı console’da `An API Key must be set when running in a browser` görürsen:
@@ -103,18 +105,20 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
 
 ## Bilinen Kısıt
 - Etsy export dosyasında doğrudan listing URL yoksa ürün linki Etsy shop search query ile üretilir.
-- Blog içeriği Markdown üretir; şu anda uygulama içinde blog route/render ekranı yoktur.
+- Blog içeriği Markdown üretir; frontend tarafında basit markdown blok parse ile render edilir (tam markdown motoru değildir).
 
 ## Son Görev Özeti (2026-02-11)
-- Kullanıcı talebi: Gemini ile ABD moda trend haberlerinden günlük blog otomasyonu ve görsel üretimi.
+- Kullanıcı talebi: Otomatik üretilen günlük blog içeriklerini web sitesi içinde gösteren bir blog sayfası ve menü entegrasyonu; Texas saati odaklı çalışma ve SEO güçlendirmesi.
 - Yapılanlar:
-  - `.github/workflows/daily-fashion-blog.yml` eklendi.
-  - `scripts/gemini_daily_fashion_blog.py` eklendi (RSS toplama, trend seçimi, Türkçe blog üretimi, görsel üretimi, index güncelleme).
-  - `requirements.txt` eklendi (`feedparser`, `google-genai`, `requests`).
-  - `public/blog/images/default-fashion.svg` fallback görseli eklendi.
-  - `README.md` günlük blog otomasyonu bilgileriyle güncellendi.
+  - `pages/Blog.tsx` eklendi (blog index fetch, markdown gösterim, Etsy CTA, navigasyon).
+  - `App.tsx` içine `/blog` route eklendi.
+  - `components/Header.tsx` desktop + mobil menüye Blog linki eklendi.
+  - `pages/Home.tsx` içine bloga yönlendiren yeni tanıtım bölümü eklendi.
+  - `.github/workflows/daily-fashion-blog.yml` cron ifadesi Texas 10:00 (CST referans) olacak şekilde güncellendi.
+  - `scripts/gemini_daily_fashion_blog.py` promptu Etsy trafik/SEO hedefiyle güçlendirildi; tarih hesaplaması America/Chicago timezone üzerinden düzenlendi.
+  - `public/sitemap.xml` içine `/#/blog` eklendi.
 - SEO/Sitemap kontrolü:
-  - Yeni uygulama route’u eklenmedi; bu nedenle `public/sitemap.xml` değişmedi.
+  - Yeni route eklendiği için sitemap güncellendi.
 
 ## Teslim Standartları
 - Kod değişikliği sonrası build çalıştır.

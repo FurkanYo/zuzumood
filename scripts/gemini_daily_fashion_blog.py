@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
+from zoneinfo import ZoneInfo
 
 import feedparser
 import requests
@@ -155,8 +156,9 @@ def build_blog_payload(client: genai.Client, articles: list[Article], date_str: 
     )
 
     prompt = f"""
-You are a senior fashion editor.
+You are a senior fashion editor and e-commerce SEO strategist.
 Task: Create a DAILY Turkish blog draft about current trending/hit fashion news in the United States for {date_str}.
+Business goal: drive qualified organic traffic to Etsy store https://www.etsy.com/shop/ZuzuMood.
 
 Use ONLY the source list below.
 Select exactly {SELECTED_NEWS} strongest trend stories.
@@ -186,6 +188,8 @@ Return only strict JSON with this schema:
 Rules:
 - "items" must contain exactly {SELECTED_NEWS} entries.
 - Keep tone practical, modern, and concise.
+- Optimize wording for Etsy purchase intent and US fashion search intent.
+- Mention "Etsy" or "ZuzuMood" naturally in summary or tips to support conversion SEO.
 - Do not invent brands or links.
 - sourceUrl must be one from provided sources.
 
@@ -271,6 +275,8 @@ def to_markdown(payload: dict[str, Any], date_iso: str, image_path: str) -> str:
         [
             "---",
             "",
+            "ABD trendlerini Etsy odaklı alışverişe çevirmek için mağazamızı ziyaret edin: https://www.etsy.com/shop/ZuzuMood",
+            "",
             "Bu içerik her gün otomatik olarak Gemini ile güncellenir.",
         ]
     )
@@ -307,9 +313,11 @@ def main() -> None:
     api_key = get_api_key()
     client = genai.Client(api_key=api_key)
 
-    now = dt.datetime.now(dt.timezone.utc)
-    date_slug = now.strftime("%Y-%m-%d")
-    date_iso = now.replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    texas_tz = ZoneInfo("America/Chicago")
+    now_local = dt.datetime.now(texas_tz)
+    now_utc = now_local.astimezone(dt.timezone.utc)
+    date_slug = now_local.strftime("%Y-%m-%d")
+    date_iso = now_utc.replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
     articles = fetch_us_fashion_news()
     if not articles:
