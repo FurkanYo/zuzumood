@@ -28,8 +28,14 @@ export const AIStylist: React.FC = () => {
     setLoading(true);
 
     try {
-      // Create a new instance right before making an API call to ensure it uses the correct key.
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const geminiApiKey = __GEMINI_API_KEY__ || import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY || import.meta.env.GEMINI_KEY || import.meta.env.API_KEY;
+
+      if (!geminiApiKey) {
+        throw new Error('Missing Gemini API key. Add VITE_GEMINI_API_KEY (recommended) or GEMINI_API_KEY in your deploy env.');
+      }
+
+      // Create a new instance right before making an API call to ensure it uses the latest configured key.
+      const ai = new GoogleGenAI({ apiKey: geminiApiKey });
       
       const systemInstruction = `
         You are the ZuzuMood AI Stylist. ZuzuMood is a high-end minimalist apparel studio.
