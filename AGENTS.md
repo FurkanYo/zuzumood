@@ -297,3 +297,21 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
 - SEO/Sitemap kontrolü:
   - Yeni route eklenmedi.
   - `public/sitemap.xml` kontrol edildi; `/admin` bilinçli olarak gizli tutulduğu için sitemap'e eklenmedi.
+
+## Son Görev Özeti (2026-02-11 / Admin Dil Ayrımı: Arayüz TR, Bot EN-US)
+- Kullanıcı geri bildirimi:
+  - Admin sayfası ve sayfa içi metinlerin Türkçe görünmesi istendi.
+  - Admin trend raporu üreten botun ise İngilizce ve ABD odaklı çalışmaya devam etmesi talep edildi.
+- Yapılanlar:
+  - `pages/Admin.tsx` içindeki admin başlık, açıklama, hata ve yüklenme mesajları tamamen Türkçeleştirildi.
+  - Markdown içeriği ekranda gösterilmeden önce standart İngilizce admin başlıklarını Türkçe karşılıklarına çeviren `localizeAdminMarkdownForTr` katmanı eklendi (görsel arayüz Türkçe kaldı).
+  - Admin rapor listesindeki tarih yerelleştirmesi `tr-TR` formatına geçirildi.
+  - `scripts/gemini_admin_trend_report.py` tarafında prompt şeması ve fallback metinlerde kalan Türkçe ifadeler temizlendi; botun EN-US üretim standardı güçlendirildi.
+  - `public/admin/index.html` yönlendirme sayfası başlığı Türkçeleştirildi ve `lang` değeri `tr` yapıldı.
+  - Mevcut örnek admin içerikleri (`public/admin/index.json` + örnek markdown) Türkçe arayüz beklentisine uyumlu olacak şekilde güncellendi.
+- Beklenen sonuç:
+  - Site içinde admin ekranı kullanıcıya Türkçe görünür.
+  - Bot, günlük üretimde EN-US/ABD sinyali odaklı rapor oluşturmayı sürdürür.
+- SEO/Sitemap kontrolü:
+  - Yeni route eklenmedi.
+  - `public/sitemap.xml` tekrar kontrol edildi; `/admin` bilinçli olarak gizli tutulduğu için sitemap'e eklenmedi.
