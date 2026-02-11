@@ -665,8 +665,7 @@ def update_index(slug: str, title: str, summary: str, date_iso: str, image_path:
         english_only_entries.append(entry)
 
     entries = [entry for entry in english_only_entries if entry.get("slug") != slug]
-    entries.insert(
-        0,
+    entries.append(
         {
             "slug": slug,
             "title": title,
@@ -676,6 +675,8 @@ def update_index(slug: str, title: str, summary: str, date_iso: str, image_path:
             "image": image_path,
         },
     )
+
+    entries.sort(key=lambda item: str(item.get("date", "")), reverse=True)
 
     INDEX_PATH.parent.mkdir(parents=True, exist_ok=True)
     INDEX_PATH.write_text(json.dumps(entries[:30], ensure_ascii=False, indent=2), encoding="utf-8")

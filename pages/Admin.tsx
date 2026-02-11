@@ -214,7 +214,7 @@ export const Admin: React.FC = () => {
         }
 
         const data = (await response.json()) as AdminPostMeta[];
-        setPosts(Array.isArray(data) ? data : []);
+        setPosts(Array.isArray(data) ? [...data].sort((a, b) => b.date.localeCompare(a.date)) : []);
       } catch (error) {
         setPosts([]);
         setIndexError(error instanceof Error ? error.message : 'Admin dizini yüklenemedi.');

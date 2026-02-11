@@ -163,7 +163,7 @@ export const Blog: React.FC = () => {
         }
 
         const data = (await response.json()) as BlogPostMeta[];
-        setPosts(Array.isArray(data) ? data : []);
+        setPosts(Array.isArray(data) ? [...data].sort((a, b) => b.date.localeCompare(a.date)) : []);
       } catch (error) {
         setPosts([]);
         setIndexError(error instanceof Error ? error.message : 'Blog index could not be loaded.');

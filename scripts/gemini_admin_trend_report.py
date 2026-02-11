@@ -161,8 +161,9 @@ def build_report_payload(client: genai.Client, articles: list[Article], date_str
 
     prompt = f"""
 You are the internal strategy analyst for ZuzuMood design team.
-Return ONLY valid JSON and write all narrative fields in English (US).
-Use US market signals only and focus on what can sell on Etsy.
+Return ONLY valid JSON.
+Research signals must come from US market sources, but ALL narrative fields in output must be Turkish.
+Focus on what can sell on Etsy in the US market.
 
 Date: {date_str}
 
@@ -173,22 +174,22 @@ Rules:
 - Produce practical guidance for designers for now, +15 days, +20 days, +30 days.
 - Include Etsy-friendly product ideas, motif/color/material guidance, and quick execution hints.
 - Include specific example links from provided sources in every horizon section.
-- Keep tone direct and workshop-ready.
+- Keep tone direct, clear, and workshop-ready for a Turkish-speaking internal team.
 - Never use markdown in JSON fields.
 
 JSON schema:
 {{
   "slug": "{date_str}-us-etsy-trend-radar",
-  "title": "string (English)",
-  "summary": "string 140-220 chars (English)",
-  "marketPulse": "string (English)",
+  "title": "string (Turkish)",
+  "summary": "string 140-260 chars (Turkish)",
+  "marketPulse": "string (Turkish)",
   "weeklyFocus": ["string", "string", "string"],
   "horizons": [
     {{
       "window": "This week | 15 days | 20 days | 30 days",
       "trendName": "string",
-      "whyNow": "string (English)",
-      "etsyOpportunity": "string (English)",
+      "whyNow": "string (Turkish)",
+      "etsyOpportunity": "string (Turkish)",
       "designDirections": ["string", "string", "string"],
       "exampleLinks": [
         {{"label": "string", "url": "https://..."}},
@@ -214,9 +215,9 @@ JSON schema:
 
 def enforce_payload_rules(payload: dict[str, Any], articles: list[Article], date_str: str) -> dict[str, Any]:
     payload["slug"] = _slugify(str(payload.get("slug") or f"{date_str}-us-etsy-trend-radar"))
-    payload["title"] = str(payload.get("title") or "ZuzuMood Internal Trend Radar").strip()
-    payload["summary"] = str(payload.get("summary") or "Internal report translating US trend signals into Etsy-focused design actions.").strip()
-    payload["marketPulse"] = str(payload.get("marketPulse") or "This report converts US trend momentum into practical Etsy sales opportunities.").strip()
+    payload["title"] = str(payload.get("title") or "ZuzuMood İç Trend Radarı").strip()
+    payload["summary"] = str(payload.get("summary") or "ABD trend sinyallerini Etsy odaklı tasarım aksiyonlarına çeviren şirket içi günlük rapor.").strip()
+    payload["marketPulse"] = str(payload.get("marketPulse") or "Bu rapor ABD trend ivmesini pratik Etsy satış fırsatlarına dönüştürür.").strip()
 
     weekly_focus = payload.get("weeklyFocus")
     if not isinstance(weekly_focus, list):
@@ -224,9 +225,9 @@ def enforce_payload_rules(payload: dict[str, Any], articles: list[Article], date
     payload["weeklyFocus"] = [str(item).strip() for item in weekly_focus if str(item).strip()][:3]
     if len(payload["weeklyFocus"]) < 3:
         payload["weeklyFocus"] += [
-            "Ship fast prototypes for a mini capsule collection this week.",
-            "Strengthen Etsy titles by pairing trend terms with clear use cases.",
-            "Keep one cohesive visual language across pins and short video assets.",
+            "Bu hafta mini kapsül koleksiyon için hızlı prototipleri yayına hazır hale getirin.",
+            "Etsy başlıklarında trend terimlerini net kullanım senaryolarıyla eşleştirin.",
+            "Pin ve kısa video varlıklarında tek bir görsel dil standardı koruyun.",
         ][: 3 - len(payload["weeklyFocus"])]
 
     fallback_links = [{"label": article.title, "url": article.url} for article in articles[:4]]
@@ -256,17 +257,17 @@ def enforce_payload_rules(payload: dict[str, Any], articles: list[Article], date
         design_directions = [str(item).strip() for item in design_directions if str(item).strip()][:3]
         if len(design_directions) < 3:
             design_directions += [
-                "Keep the silhouette clean and deliver the standout point through accessories.",
-                "Use neutral backgrounds with one accent color in product photography.",
-                "Add clear use-context in descriptions (bridal shower, rehearsal dinner, city hall).",
+                "Silueti sade tutun; fark yaratan etkiyi aksesuar katmanında verin.",
+                "Ürün fotoğraflarında nötr arka plan ve tek vurgu rengi kullanın.",
+                "Açıklamalara net kullanım bağlamı ekleyin (bridal shower, prova yemeği, city hall nikahı).",
             ][: 3 - len(design_directions)]
 
         normalized_horizons.append(
             {
                 "window": window,
                 "trendName": str(source.get("trendName") or f"US Trend Opportunity {index + 1}").strip(),
-                "whyNow": str(source.get("whyNow") or "Signal density is rising, so fast execution creates a conversion advantage.").strip(),
-                "etsyOpportunity": str(source.get("etsyOpportunity") or "There is strong opportunity in personalized products with high-intent niche search terms.").strip(),
+                "whyNow": str(source.get("whyNow") or "Sinyal yoğunluğu artıyor; hızlı uygulama dönüşüm avantajı yaratır.").strip(),
+                "etsyOpportunity": str(source.get("etsyOpportunity") or "Yüksek niyetli niş aramalara odaklanan kişiselleştirilebilir ürünlerde güçlü Etsy fırsatı var.").strip(),
                 "designDirections": design_directions,
                 "exampleLinks": valid_links,
             }
@@ -280,9 +281,9 @@ def enforce_payload_rules(payload: dict[str, Any], articles: list[Article], date
     payload["competitorWatch"] = [str(item).strip() for item in competitor if str(item).strip()][:3]
     if len(payload["competitorWatch"]) < 3:
         payload["competitorWatch"] += [
-            "Competitors are increasing lifestyle scenes in packaging and hero imagery.",
-            "Title patterns combining 'gift for bride' and 'bridal shower' continue to gain traction.",
-            "2-3 color variant strategy for the same SKU is improving conversion.",
+            "Rakipler paketleme ve hero görsellerde lifestyle sahneleri artırıyor.",
+            "'Gift for bride' ve 'bridal shower' kombinli başlık yapıları ivmesini koruyor.",
+            "Aynı SKU için 2-3 renk varyantı stratejisi dönüşümü yükseltiyor.",
         ][: 3 - len(payload["competitorWatch"])]
 
     checklist = payload.get("actionChecklist")
@@ -291,10 +292,10 @@ def enforce_payload_rules(payload: dict[str, Any], articles: list[Article], date
     payload["actionChecklist"] = [str(item).strip() for item in checklist if str(item).strip()][:4]
     if len(payload["actionChecklist"]) < 4:
         payload["actionChecklist"] += [
-            "Finalize 3 new concepts this week with moodboard and production-ready sketches.",
-            "Map Etsy keyword variations for each design before listing.",
-            "Define one cohesive visual direction for upcoming photography.",
-            "Track sales and favorites growth before the next report cycle.",
+            "Bu hafta 3 yeni konsepti moodboard ve üretime hazır eskizlerle tamamlayın.",
+            "Listelemeden önce her tasarım için Etsy anahtar kelime varyasyonlarını eşleyin.",
+            "Yaklaşan çekimler için tek ve tutarlı bir görsel yön belirleyin.",
+            "Bir sonraki rapor döngüsüne kadar satış ve favori artışını takip edin.",
         ][: 4 - len(payload["actionChecklist"])]
 
     return payload
@@ -306,7 +307,7 @@ def to_markdown(payload: dict[str, Any], date_iso: str) -> str:
         f'title: "{str(payload["title"]).replace(chr(34), chr(39))}"',
         f"date: {date_iso}",
         f'description: "{str(payload["summary"]).replace(chr(34), chr(39))}"',
-        "locale: en-US",
+        "locale: tr-TR",
         "region: us",
         "category: internal-trend-guide",
         "---",
@@ -315,15 +316,15 @@ def to_markdown(payload: dict[str, Any], date_iso: str) -> str:
         "",
         payload["summary"],
         "",
-        "## Market Pulse",
+        "## Pazar Nabzı",
         "",
         payload["marketPulse"],
         "",
-        "## This Week's Focus",
+        "## Bu Haftanın Odağı",
         "",
         *[f"- {item}" for item in payload["weeklyFocus"]],
         "",
-        "## Trend Horizons (Now + 15/20/30 Days)",
+        "## Trend Ufukları (Şimdi + 15/20/30 Gün)",
         "",
     ]
 
@@ -332,14 +333,14 @@ def to_markdown(payload: dict[str, Any], date_iso: str) -> str:
             [
                 f"### {horizon['window']} — {horizon['trendName']}",
                 "",
-                f"**Why now:** {horizon['whyNow']}",
+                f"**Neden şimdi:** {horizon['whyNow']}",
                 "",
-                f"**Etsy opportunity:** {horizon['etsyOpportunity']}",
+                f"**Etsy fırsatı:** {horizon['etsyOpportunity']}",
                 "",
-                "**Design directions:**",
+                "**Tasarım yönleri:**",
                 *[f"- {item}" for item in horizon["designDirections"]],
                 "",
-                "**Example sources:**",
+                "**Örnek kaynaklar:**",
                 *[f"- [{link['label']}]({link['url']})" for link in horizon["exampleLinks"]],
                 "",
             ]
@@ -347,17 +348,17 @@ def to_markdown(payload: dict[str, Any], date_iso: str) -> str:
 
     lines.extend(
         [
-            "## Competitor and Platform Watch",
+            "## Rakip ve Platform Takibi",
             "",
             *[f"- {item}" for item in payload["competitorWatch"]],
             "",
-            "## Action Checklist",
+            "## Aksiyon Kontrol Listesi",
             "",
             *[f"- {item}" for item in payload["actionChecklist"]],
             "",
             "---",
             "",
-            "This report is intended for internal team use only.",
+            "Bu rapor yalnızca şirket içi ekip kullanımı içindir.",
             "",
         ]
     )
@@ -374,8 +375,7 @@ def update_index(slug: str, title: str, summary: str, date_iso: str) -> None:
             entries = []
 
     entries = [entry for entry in entries if entry.get("slug") != slug]
-    entries.insert(
-        0,
+    entries.append(
         {
             "slug": slug,
             "title": title,
@@ -384,6 +384,8 @@ def update_index(slug: str, title: str, summary: str, date_iso: str) -> None:
             "path": f"/admin/{slug}.md",
         },
     )
+
+    entries.sort(key=lambda item: str(item.get("date", "")), reverse=True)
 
     INDEX_PATH.parent.mkdir(parents=True, exist_ok=True)
     INDEX_PATH.write_text(json.dumps(entries[:30], ensure_ascii=False, indent=2), encoding="utf-8")
