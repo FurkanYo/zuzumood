@@ -237,3 +237,21 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
 - SEO/Sitemap kontrolü:
   - Yeni route eklenmedi.
   - `public/sitemap.xml` kontrol edildi; `/`, `/#/shop`, `/#/blog` mevcut ve yeterli.
+
+## Son Görev Özeti (2026-02-11 / Blog Uyum Düzeltmesi + Gizli Admin Trend Masası)
+- Kullanıcı geri bildirimi:
+  - Blog sayfasında başlık/hero kutusunda sağa kayma ve genel uyum sorunu vardı.
+  - Blog ve ana sayfadaki bazı Türkçe metinlerin İngilizceye çevrilmesi istendi.
+  - Mevcut blog botuna ek olarak ABD moda sinyallerini 15/20/30 gün ufkunda Etsy fırsatına çeviren ikinci bir bot ve gizli `/admin` sayfası istendi.
+- Yapılanlar:
+  - `pages/Blog.tsx` içinde hero ve CTA metinleri İngilizceleştirildi, içerik alanına `min-w-0` + `overflow-hidden` eklenerek sağa taşma/kayma riski azaltıldı.
+  - `pages/Home.tsx` içindeki blog tanıtım metni İngilizceye çevrildi.
+  - `pages/Admin.tsx` eklendi: `/admin` route için blog benzeri iç panel, şifre kapısı (`zuzumood`) ve `sessionStorage` tabanlı erişim koruması oluşturuldu.
+  - `App.tsx` içine `/admin` route eklendi.
+  - `scripts/gemini_admin_trend_report.py` eklendi: ABD odaklı moda/trend sinyallerini çekip Türkçe iç ekip raporu üretir (`public/admin/*.md`, `public/admin/index.json`).
+  - `.github/workflows/daily-admin-trend-report.yml` eklendi: yeni admin trend botunu günlük çalıştırır ve sadece `public/admin` değişikliklerini commit eder.
+  - `public/admin/index.json` ve örnek başlangıç raporu (`public/admin/2026-02-11-us-etsy-trend-radar.md`) eklendi.
+  - `public/robots.txt` güncellendi: `/admin` disallow ile bot taraması azaltıldı.
+- SEO/Sitemap kontrolü:
+  - Kullanıcı isteği gereği `/admin` **gizli** tutuldu, `public/sitemap.xml` içine eklenmedi.
+  - `robots.txt` ile `/admin` disallow uygulandı; sayfa ayrıca runtime `noindex, nofollow` meta ile korunuyor.

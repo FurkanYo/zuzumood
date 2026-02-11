@@ -86,7 +86,7 @@ export const Home: React.FC = () => {
           <p className="text-[10px] uppercase tracking-[0.35em] text-muted mb-5">New Every Day • 10:00 AM Texas Research Cycle</p>
           <h3 className="text-4xl md:text-5xl font-serif mb-6">Daily US Fashion + Etsy SEO Blog</h3>
           <p className="text-base md:text-lg text-gray-700 leading-relaxed max-w-3xl mx-auto mb-8">
-            Amerika moda trendlerini her gün analiz eden ve Etsy satış niyetine göre optimize edilen blog yazılarına tek sayfadan ulaşın.
+            Access daily US fashion trend articles optimized for Etsy search intent from one place.
           </p>
           <Link to="/blog" className="inline-block bg-black text-white px-10 py-4 text-[10px] font-bold uppercase tracking-[0.35em] hover:bg-muted transition-colors">
             Explore Blog
