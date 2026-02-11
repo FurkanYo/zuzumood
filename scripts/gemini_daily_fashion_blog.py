@@ -205,12 +205,42 @@ Sources:
 
     text = (resp.text or "").strip()
     payload = _extract_json(text)
+    payload = enforce_etsy_focus(payload)
 
     if len(payload.get("items", [])) != SELECTED_NEWS:
         raise ValueError("Gemini did not return expected number of items")
 
     return payload
 
+
+
+
+def enforce_etsy_focus(payload: dict[str, Any]) -> dict[str, Any]:
+    summary = str(payload.get("summary", "")).strip()
+    if "etsy" not in summary.lower() and "zuzumood" not in summary.lower():
+        payload["summary"] = f"{summary} ZuzuMood Etsy mağazası için trend odaklı stil fikirleri içerir.".strip()
+
+    items = payload.get("items", [])
+    if isinstance(items, list):
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            tip = str(item.get("styleTip", "")).strip()
+            if "etsy" not in tip.lower() and "zuzumood" not in tip.lower():
+                item["styleTip"] = f"{tip} Uyumlu parçalar için ZuzuMood Etsy mağazasına göz at.".strip()
+
+    seo = payload.get("seo", {})
+    if isinstance(seo, dict):
+        meta_title = str(seo.get("metaTitle", "")).strip()
+        meta_description = str(seo.get("metaDescription", "")).strip()
+
+        if meta_title and "etsy" not in meta_title.lower() and "zuzumood" not in meta_title.lower():
+            seo["metaTitle"] = f"{meta_title} | ZuzuMood Etsy"[:60]
+
+        if meta_description and "etsy" not in meta_description.lower() and "zuzumood" not in meta_description.lower():
+            seo["metaDescription"] = f"{meta_description} Trend parçalar için ZuzuMood Etsy mağazasını ziyaret edin."[:155]
+
+    return payload
 
 def generate_cover_image(client: genai.Client, prompt: str, output_path: Path) -> bool:
     response = client.models.generate_content(

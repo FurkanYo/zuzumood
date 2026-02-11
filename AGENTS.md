@@ -108,17 +108,14 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
 - Blog içeriği Markdown üretir; frontend tarafında basit markdown blok parse ile render edilir (tam markdown motoru değildir).
 
 ## Son Görev Özeti (2026-02-11)
-- Kullanıcı talebi: Otomatik üretilen günlük blog içeriklerini web sitesi içinde gösteren bir blog sayfası ve menü entegrasyonu; Texas saati odaklı çalışma ve SEO güçlendirmesi.
+- Kullanıcı geri bildirimi: Blog sayfasında yükleme hatası/alınan hata kimliği sonrası stabilite ve SEO odaklı içerik güvenliği iyileştirmesi talep edildi.
 - Yapılanlar:
-  - `pages/Blog.tsx` eklendi (blog index fetch, markdown gösterim, Etsy CTA, navigasyon).
-  - `App.tsx` içine `/blog` route eklendi.
-  - `components/Header.tsx` desktop + mobil menüye Blog linki eklendi.
-  - `pages/Home.tsx` içine bloga yönlendiren yeni tanıtım bölümü eklendi.
-  - `.github/workflows/daily-fashion-blog.yml` cron ifadesi Texas 10:00 (CST referans) olacak şekilde güncellendi.
-  - `scripts/gemini_daily_fashion_blog.py` promptu Etsy trafik/SEO hedefiyle güçlendirildi; tarih hesaplaması America/Chicago timezone üzerinden düzenlendi.
-  - `public/sitemap.xml` içine `/#/blog` eklendi.
+  - `pages/Blog.tsx` içinde asset URL çözümü `import.meta.env.BASE_URL` ile güvenli hale getirildi.
+  - Blog index ve markdown fetch işlemlerine `response.ok` kontrolü + kullanıcıya görünen hata mesajları eklendi.
+  - Blog index yalnızca mount anında yüklenir hale getirilerek gereksiz tekrar fetch azaltıldı.
+  - `scripts/gemini_daily_fashion_blog.py` içine `enforce_etsy_focus` eklendi; summary/styleTip/seo alanlarında Etsy-ZuzuMood ifadesi yoksa otomatik tamamlanıyor.
 - SEO/Sitemap kontrolü:
-  - Yeni route eklendiği için sitemap güncellendi.
+  - Yeni route eklenmedi; mevcut `/#/blog` sitemap girişi yeterli, değişiklik gerekmedi.
 
 ## Teslim Standartları
 - Kod değişikliği sonrası build çalıştır.

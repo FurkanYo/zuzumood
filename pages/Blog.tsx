@@ -15,6 +15,22 @@ interface MarkdownBlock {
   content?: string;
 }
 
+const BASE_URL = import.meta.env.BASE_URL || '/';
+
+const toAssetUrl = (value: string): string => {
+  if (!value) {
+    return BASE_URL;
+  }
+
+  if (/^https?:\/\//.test(value)) {
+    return value;
+  }
+
+  const cleanBase = BASE_URL.endsWith('/') ? BASE_URL.slice(0, -1) : BASE_URL;
+  const cleanPath = value.startsWith('/') ? value : `/${value}`;
+  return `${cleanBase}${cleanPath}`;
+};
+
 const stripFrontmatter = (markdown: string): string => {
   const normalized = markdown.replace(/\r\n/g, '\n');
   if (!normalized.startsWith('---\n')) {
@@ -126,6 +142,8 @@ export const Blog: React.FC = () => {
   const [selectedMarkdown, setSelectedMarkdown] = useState('');
   const [isLoadingPosts, setIsLoadingPosts] = useState(true);
   const [isLoadingPost, setIsLoadingPost] = useState(false);
+  const [indexError, setIndexError] = useState('');
+  const [postError, setPostError] = useState('');
 
   const selectedSlug = searchParams.get('post');
 
@@ -136,21 +154,32 @@ export const Blog: React.FC = () => {
   useEffect(() => {
     const loadIndex = async () => {
       setIsLoadingPosts(true);
-      try {
-        const response = await fetch('/blog/index.json', { cache: 'no-store' });
-        const data = (await response.json()) as BlogPostMeta[];
-        setPosts(data);
+      setIndexError('');
 
-        if (!selectedSlug && data.length > 0) {
-          setSearchParams({ post: data[0].slug }, { replace: true });
+      try {
+        const response = await fetch(toAssetUrl('/blog/index.json'), { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error(`Blog index could not be loaded (${response.status})`);
         }
+
+        const data = (await response.json()) as BlogPostMeta[];
+        setPosts(Array.isArray(data) ? data : []);
+      } catch (error) {
+        setPosts([]);
+        setIndexError(error instanceof Error ? error.message : 'Blog index could not be loaded.');
       } finally {
         setIsLoadingPosts(false);
       }
     };
 
     void loadIndex();
-  }, [selectedSlug, setSearchParams]);
+  }, []);
+
+  useEffect(() => {
+    if (!selectedSlug && posts.length > 0) {
+      setSearchParams({ post: posts[0].slug }, { replace: true });
+    }
+  }, [posts, selectedSlug, setSearchParams]);
 
   useEffect(() => {
     const selectedPost = posts.find((post) => post.slug === selectedSlug) ?? posts[0];
@@ -162,10 +191,18 @@ export const Blog: React.FC = () => {
 
     const loadPost = async () => {
       setIsLoadingPost(true);
+      setPostError('');
       try {
-        const response = await fetch(selectedPost.path, { cache: 'no-store' });
+        const response = await fetch(toAssetUrl(selectedPost.path), { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error(`Blog post could not be loaded (${response.status})`);
+        }
+
         const markdown = await response.text();
         setSelectedMarkdown(markdown);
+      } catch (error) {
+        setSelectedMarkdown('');
+        setPostError(error instanceof Error ? error.message : 'Blog post could not be loaded.');
       } finally {
         setIsLoadingPost(false);
       }
@@ -211,6 +248,8 @@ export const Blog: React.FC = () => {
             <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] mb-4 text-muted">Latest Blog Posts</h2>
             {isLoadingPosts ? (
               <p className="text-sm text-muted">Blog index loading...</p>
+            ) : indexError ? (
+              <p className="text-sm text-red-600">{indexError}</p>
             ) : (
               <ul className="space-y-3">
                 {posts.map((post) => {
@@ -246,7 +285,7 @@ export const Blog: React.FC = () => {
           <article className="bg-white rounded-2xl border border-gray-100 p-6 md:p-10">
             {selectedPost?.image && (
               <img
-                src={selectedPost.image}
+                src={toAssetUrl(selectedPost.image)}
                 alt={selectedPost.title}
                 className="w-full h-52 md:h-72 object-cover rounded-2xl mb-8 border border-gray-100"
                 loading="lazy"
@@ -255,6 +294,8 @@ export const Blog: React.FC = () => {
 
             {isLoadingPost ? (
               <p className="text-base text-muted">Post loading...</p>
+            ) : postError ? (
+              <p className="text-base text-red-600">{postError}</p>
             ) : (
               <div className="space-y-6 text-gray-900">
                 {blocks.map((block, index) => {
