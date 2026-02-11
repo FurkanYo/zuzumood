@@ -108,14 +108,13 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
 - Blog içeriği Markdown üretir; frontend tarafında basit markdown blok parse ile render edilir (tam markdown motoru değildir).
 
 ## Son Görev Özeti (2026-02-11)
-- Kullanıcı geri bildirimi: Blog sayfasında yükleme hatası/alınan hata kimliği sonrası stabilite ve SEO odaklı içerik güvenliği iyileştirmesi talep edildi.
+- Kullanıcı geri bildirimi: Anasayfadan bloglara erişimde görünürlük sorunu bildirildi; blog sayfası linklerinin header/footer içinde daha erişilebilir olması istendi.
 - Yapılanlar:
-  - `pages/Blog.tsx` içinde asset URL çözümü `import.meta.env.BASE_URL` ile güvenli hale getirildi.
-  - Blog index ve markdown fetch işlemlerine `response.ok` kontrolü + kullanıcıya görünen hata mesajları eklendi.
-  - Blog index yalnızca mount anında yüklenir hale getirilerek gereksiz tekrar fetch azaltıldı.
-  - `scripts/gemini_daily_fashion_blog.py` içine `enforce_etsy_focus` eklendi; summary/styleTip/seo alanlarında Etsy-ZuzuMood ifadesi yoksa otomatik tamamlanıyor.
+  - `components/Header.tsx` sağ aksiyon alanına da doğrudan `Blog` linki eklendi; böylece sticky header durumunda blog erişimi netleşti.
+  - `components/Footer.tsx` içinde gezinme alanı `react-router-dom` `Link` ile güçlendirildi ve footer'a blog erişimi (`Daily Blog`) eklendi.
+  - Footer'daki "Explore All Pieces" metni de gerçek route (`/shop`) linki olacak şekilde düzeltildi.
 - SEO/Sitemap kontrolü:
-  - Yeni route eklenmedi; mevcut `/#/blog` sitemap girişi yeterli, değişiklik gerekmedi.
+  - Yeni route eklenmedi; `public/sitemap.xml` içinde `/#/blog` zaten mevcut, ek değişiklik gerekmedi.
 
 ## Teslim Standartları
 - Kod değişikliği sonrası build çalıştır.

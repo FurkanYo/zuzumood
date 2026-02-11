@@ -71,6 +71,12 @@ export const Header: React.FC = () => {
 
             {/* Right Actions */}
             <div className={`flex items-center justify-end space-x-6 ${isScrolled || isSearchOpen ? 'text-black' : 'text-black md:text-white'}`}>
+              <Link
+                to="/blog"
+                className="text-[9px] font-bold uppercase tracking-[0.25em] hover:text-muted transition-colors"
+              >
+                Blog
+              </Link>
               <button onClick={() => setIsSearchOpen(!isSearchOpen)} className="group transition-transform hover:scale-110">
                 <Search className="w-4 h-4" />
               </button>
