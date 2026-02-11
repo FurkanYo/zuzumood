@@ -20,6 +20,31 @@ export const ProductDetail: React.FC = () => {
 
   const etsyUrl = product.etsyUrl || `https://www.etsy.com/shop/ZuzuMood?search_query=${encodeURIComponent(product.title)}`;
 
+  const handleShare = async () => {
+    const shareData = {
+      title: `${product.title} | ZuzuMood`,
+      text: `Check this ZuzuMood product: ${product.title}`,
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch {
+        // fall back to clipboard
+      }
+    }
+
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(window.location.href);
+      window.alert('Product link copied to clipboard.');
+      return;
+    }
+
+    window.prompt('Copy this product URL:', window.location.href);
+  };
+
   return (
     <div className="pt-40 pb-32 bg-white">
       {/* Breadcrumb */}
@@ -106,7 +131,7 @@ export const ProductDetail: React.FC = () => {
                 <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-white' : ''}`} />
                 <span>{isWishlisted ? 'Saved to Archive' : 'Save to Wishlist'}</span>
               </button>
-              <button className="w-16 border border-gray-200 flex items-center justify-center hover:border-black transition-colors">
+              <button onClick={() => { void handleShare(); }} className="w-16 border border-gray-200 flex items-center justify-center hover:border-black transition-colors">
                 <Share2 className="w-4 h-4" />
               </button>
             </div>

@@ -16,9 +16,9 @@ export const Footer: React.FC = () => {
           </div>
           
           <div>
-            <h4 className="text-[10px] font-bold uppercase tracking-[0.4em] mb-8">The Archive</h4>
+            <h4 className="text-[10px] font-bold uppercase tracking-[0.4em] mb-8">All Products</h4>
             <ul className="space-y-4 text-[10px] text-muted uppercase tracking-[0.2em]">
-              <li><Link to="/shop" className="hover:text-black transition-colors underline-offset-4 hover:underline">Explore All Pieces</Link></li>
+              <li><Link to="/shop" className="hover:text-black transition-colors underline-offset-4 hover:underline">All Products</Link></li>
               <li><a href="https://www.etsy.com/shop/ZuzuMood" target="_blank" rel="noreferrer" className="hover:text-black transition-colors underline-offset-4 hover:underline">Official Etsy Store</a></li>
               <li><Link to="/blog" className="hover:text-black transition-colors underline-offset-4 hover:underline">Daily Blog</Link></li>
             </ul>
@@ -29,15 +29,15 @@ export const Footer: React.FC = () => {
             <ul className="space-y-4 text-[10px] text-muted uppercase tracking-[0.2em]">
               <li><a href="https://www.etsy.com/shop/ZuzuMood#policies" target="_blank" rel="noreferrer" className="hover:text-black transition-colors underline-offset-4 hover:underline">Shipping (USA & Global)</a></li>
               <li><a href="https://www.etsy.com/shop/ZuzuMood#policies" target="_blank" rel="noreferrer" className="hover:text-black transition-colors underline-offset-4 hover:underline">Return Policy</a></li>
-              <li className="hover:text-black transition-colors cursor-pointer underline-offset-4 hover:underline">Size Guide</li>
+              <li><a href="https://www.etsy.com/shop/ZuzuMood#policies" target="_blank" rel="noreferrer" className="hover:text-black transition-colors underline-offset-4 hover:underline">Size Guide</a></li>
             </ul>
           </div>
 
           <div>
             <h4 className="text-[10px] font-bold uppercase tracking-[0.4em] mb-8">Connect</h4>
             <div className="flex flex-col space-y-4 text-[10px] text-muted uppercase tracking-[0.2em]">
-              <span className="hover:text-black transition-colors cursor-pointer">Instagram</span>
-              <span className="hover:text-black transition-colors cursor-pointer">Pinterest</span>
+              <a href="https://www.instagram.com" target="_blank" rel="noreferrer" className="hover:text-black transition-colors">Instagram</a>
+              <a href="https://www.pinterest.com" target="_blank" rel="noreferrer" className="hover:text-black transition-colors">Pinterest</a>
               <form className="mt-4">
                 <input 
                   type="email" 
@@ -52,8 +52,8 @@ export const Footer: React.FC = () => {
         <div className="pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center text-[8px] font-bold uppercase tracking-[0.5em] text-muted">
           <span>© 2025 ZuzuMood Studio • Proudly Based in Texas • Fulfilled by Etsy.</span>
           <div className="mt-4 md:mt-0 flex space-x-8">
-            <span>Terms of Service</span>
-            <span>Privacy Archive</span>
+            <Link to="/terms" className="hover:text-black transition-colors">Terms of Service</Link>
+            <Link to="/privacy" className="hover:text-black transition-colors">Privacy Policy</Link>
             <span className="text-black">English (US)</span>
           </div>
         </div>

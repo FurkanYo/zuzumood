@@ -1,101 +1,65 @@
 ---
-title: "ZuzuMood İç Trend Radarı: ABD Etsy Odaklı Tasarım Rehberi"
+title: "ZuzuMood Internal Trend Radar: US Etsy Design Guide"
 date: 2026-02-11T18:00:00Z
-description: "ABD moda sinyallerine göre bu hafta ve 15/20/30 gün sonrası için Etsy'de karşılık bulabilecek trend, ürün ve tasarım yönlerini özetler."
-locale: tr-TR
+description: "Summarizes trend, product, and design opportunities from US fashion signals for this week and the next 15/20/30-day windows."
+locale: en-US
 region: us
 category: internal-trend-guide
 ---
 
-# ZuzuMood İç Trend Radarı: ABD Etsy Odaklı Tasarım Rehberi
+# ZuzuMood Internal Trend Radar: US Etsy Design Guide
 
-Bu rapor, ABD pazarındaki güncel moda sinyallerini ve Etsy'de talep çekebilecek ürün fikirlerini house tasarım ekibi için hızlı aksiyon formatında sunar.
+This internal report translates US trend momentum into practical Etsy listing opportunities for the Texas studio team.
 
-## Pazar Nabzı
+## Market Pulse
 
-ABD'de bridal + eventwear tarafında kişiselleştirilebilir detaylar, mini siluetler, coquette aksesuar dili ve western-modern kırılımı aynı anda görünürlük kazanıyor. Etsy'de niş arama niyeti yüksek kombinasyonlar (bridal shower gift, bachelorette accessories, custom bow veil vb.) hızlı test için uygundur.
+US bridal and eventwear shoppers continue to reward personalized details, highly visual styling cues, and occasion-specific product naming.
 
-## Bu Haftanın Odakları
+## This Week's Focus
 
-- Mevcut koleksiyondan kişiselleştirilebilir 3 ürünü "bridal event" odaklı yeniden paketle.
-- Kapak görsellerinde tek vurgu rengi + net kullanım sahnesi yaklaşımını standartlaştır.
-- Ürün başlıklarında trend kelimesi + kullanım bağlamı + hediye niyetini birlikte kullan.
+- Refresh 3 existing products with high-intent bridal event positioning.
+- Standardize hero images with one accent color and clear usage context.
+- Tighten listing titles using trend + occasion + gift intent phrasing.
 
-## Trend Ufukları (Bu hafta + 15/20/30 Gün)
+## Trend Horizons (Now + 15/20/30 Days)
 
-### Bu hafta — Coquette Bridal Aksesuar Dalgası
+### This week — Coquette-inspired bridal accessories
 
-**Neden şimdi:** Pinterest/TikTok tarafında fiyonk, tül ve romantik minimal aksesuarlar yeniden yükseliyor.
+**Why now:** Short-form platforms are amplifying bows, lace textures, and soft romantic details.
 
-**Etsy fırsatı:** Düşük maliyetli, hızlı üretilebilir ve kişiselleştirilebilir aksesuarlar dönüşüm için güçlü.
+**Etsy opportunity:** Fast-turn accessory SKUs can capture immediate search demand.
 
-**Tasarım yönleri:**
-- İnce saten fiyonk + inci detaylı saç aksesuar setleri.
-- Krem, ivory, blush ve soft black mini kapsül renk kartelası.
-- Ürün varyantlarında "gelin", "bridal shower", "bachelorette" etiketlemesi.
+### 15 days — Reception second-look demand
 
-**Örnek kaynaklar:**
-- [Pinterest Predicts 2026 Fashion Signals](https://www.pinterest.com/pinterestpredicts/)
-- [Etsy Trend Edit](https://www.etsy.com/trend)
+**Why now:** Brides are actively planning separate ceremony and after-party styling.
 
-### 15 gün — Mini Bridal ve İkinci Look Talebi
+**Etsy opportunity:** Bundle-friendly accessories improve average order value.
 
-**Neden şimdi:** Resepsiyon/after-party için ikinci look aramaları artıyor.
+### 20 days — Modern western influence in Texas weddings
 
-**Etsy fırsatı:** Aksesuar + mini elbise tamamlayıcı ürün paketleriyle sepet büyütme mümkün.
+**Why now:** Southern and Texas styling details are becoming mainstream in bridal contexts.
 
-**Tasarım yönleri:**
-- Mini elbise ile uyumlu detachable tül kol ve boyun aksesuarları.
-- "Two look in one night" anlatımıyla ürün set kurgusu.
-- Fotoğraf setinde şehir düğünü/courthouse bağlamı kullanımı.
+**Etsy opportunity:** Personalized western accents can outperform broad generic listings.
 
-**Örnek kaynaklar:**
-- [Vogue Bridal Trend Coverage](https://www.vogue.com/fashion)
-- [Google News US Bridal Trends](https://news.google.com/)
+### 30 days — Personalized gift-intent growth
 
-### 20 gün — Western Chic + Texas Etkisi
+**Why now:** Search behavior shows growing overlap between bridal gifting and custom keepsake intent.
 
-**Neden şimdi:** Texas ve güney odaklı düğün estetiğinde modern western detaylar artıyor.
+**Etsy opportunity:** Name-based and role-based personalization supports conversion.
 
-**Etsy fırsatı:** Niş ama yüksek niyetli aramalarda kişiselleştirme avantajı yüksek.
+## Competitor and Platform Watch
 
-**Tasarım yönleri:**
-- Western dikiş çizgilerini modern minimal formla birleştiren kemer/aksesuar.
-- İsim işlemeli bridal bandana ve event sash varyasyonları.
-- Bej, taş, kırık beyaz ve metalik vurgu kombinasyonları.
+- Leading shops are increasing lifestyle-led product photography.
+- Top listings anchor titles around occasion and recipient intent.
+- Variant depth (2-3 colorways) is improving conversion efficiency.
 
-**Örnek kaynaklar:**
-- [Who What Wear Wedding Trends](https://www.whowhatwear.com/)
-- [Refinery29 Style News](https://www.refinery29.com/en-us/style)
+## Action Checklist
 
-### 30 gün — Layered Personalization ve Gift Intent
-
-**Neden şimdi:** Hediye niyetli aramalarda kişiselleştirme + paketleme beklentisi yükseliyor.
-
-**Etsy fırsatı:** "Bride to be", "maid of honor", "gift for bride" segmentlerinde dönüşüm potansiyeli yüksek.
-
-**Tasarım yönleri:**
-- İsim/baş harf özelleştirmeli çoklu ürün paketleri.
-- Hediye notu kartı + premium paketleme opsiyonu.
-- Aynı ürün için bütçe katmanı oluşturan 3 fiyat seviyesi.
-
-**Örnek kaynaklar:**
-- [Etsy Marketplace Insights](https://www.etsy.com/seller-handbook)
-- [Business of Fashion News](https://www.businessoffashion.com/)
-
-## Rakip ve Platform Gözlemleri
-
-- Rakip mağazalar lifestyle fotoğrafını artırarak ürün kullanımını net anlatıyor.
-- Aynı tasarımın farklı event bağlamlarında yeniden konumlandırılması artıyor.
-- Uzun kuyruklu aramalarda "gift + occasion + personalization" kombinasyonları güçleniyor.
-
-## Uygulama Kontrol Listesi
-
-- Bu hafta test için 5 ürün seç ve her biri için 3 başlık varyantı üret.
-- 2 ürün için yeni kapak görsel dili çekimi planla.
-- Ürün açıklamalarına bakım/teslim/personalization netlik maddeleri ekle.
-- Haftalık raporda favori oranı + sepete ekleme karşılaştırmasını paylaş.
+- Finalize 3 new design concepts this week.
+- Prepare keyword variants before publishing any refreshed listing.
+- Ship one consistent visual direction across all new photos.
+- Track favorites, conversion, and add-to-cart trends in the next cycle.
 
 ---
 
-Bu rapor yalnızca iç ekip kullanımı içindir.
+This report is intended for internal team use only.

@@ -154,7 +154,7 @@ export const Admin: React.FC = () => {
   const selectedSlug = searchParams.get('post');
 
   useEffect(() => {
-    document.title = 'ZuzuMood Admin Trend Desk';
+    document.title = 'ZuzuMood Admin Trend Desk (US/Texas)';
 
     const previousRobots = document.querySelector('meta[name="robots"]');
     const previousContent = previousRobots?.getAttribute('content') ?? null;
@@ -306,7 +306,7 @@ export const Admin: React.FC = () => {
           <p className="text-[10px] uppercase tracking-[0.35em] text-white/70 mb-5">Internal Trend Desk • US Market / Etsy Demand</p>
           <h1 className="text-3xl md:text-5xl font-serif mb-5">ZuzuMood Admin Trend Rehberi</h1>
           <p className="max-w-3xl text-sm md:text-base text-white/85 leading-relaxed">
-            Bu panel günlük olarak ABD moda sinyallerini, Etsy satış fırsatlarını ve 15/20/30 gün sonrası trend tahminlerini Türkçe olarak toplar.
+            This internal panel collects daily US fashion signals, Etsy opportunities, and 15/20/30-day trend forecasts for the Texas-based team.
             House tasarım ekibi bu raporları kullanarak koleksiyon fikirlerini hızlıca planlayabilir.
           </p>
         </section>
@@ -334,7 +334,7 @@ export const Admin: React.FC = () => {
                         }`}
                       >
                         <p className="text-[10px] uppercase tracking-[0.22em] mb-2 opacity-80">
-                          {new Date(post.date).toLocaleDateString('tr-TR', {
+                          {new Date(post.date).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'short',
                             day: 'numeric',

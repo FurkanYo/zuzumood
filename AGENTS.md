@@ -255,3 +255,28 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
 - SEO/Sitemap kontrolü:
   - Kullanıcı isteği gereği `/admin` **gizli** tutuldu, `public/sitemap.xml` içine eklenmedi.
   - `robots.txt` ile `/admin` disallow uygulandı; sayfa ayrıca runtime `noindex, nofollow` meta ile korunuyor.
+
+## Son Görev Özeti (2026-02-11 / US-Texas Locale & Navigation + Bot Fix + Policy Pages)
+- Kullanıcı geri bildirimi:
+  - Site içinde TR/Türkçe locale izleri tamamen kaldırılmalı, US/Texas odak güçlenmeli.
+  - Ürün detay paylaş butonu çalışır olmalı.
+  - "Edit" tekrarları ve menüdeki "Archive" dili sadeleşmeli.
+  - Header'da çift Blog linkinden soldaki kaldırılmalı.
+  - `public/favicon_io` altındaki favicon seti tüm tarayıcıda aktif kullanılmalı.
+  - Admin trend botu syntax hatası (`unterminated string`) düzeltildi.
+  - Workflow saatleri: blog botu Texas saati 09:00, admin botu TR saati 00:00 olacak şekilde güncellenmeli.
+  - Policy içerikleri site içinde görünür ve US/Texas hukuki çerçeve vurgulu olmalı.
+- Yapılanlar:
+  - `components/Header.tsx`: Sol menüdeki Blog kaldırıldı, `Archive` etiketi `All Products` yapıldı, gereksiz `Edit` kullanımını azaltan metin düzeni yapıldı.
+  - `services/data.ts` + `pages/Shop.tsx`: kategori/başlık dili sadeleştirildi (`Teacher`, `Aesthetic`), hero başlığındaki otomatik `Edit` eki kaldırıldı.
+  - `pages/ProductDetail.tsx`: Share butonuna Web Share API + clipboard fallback eklendi.
+  - `components/Footer.tsx`: Terms/Privacy gerçek route linkleri eklendi, çalışmayan metin linkleri aktif URL'lere çevrildi.
+  - `pages/Terms.tsx` ve `pages/Privacy.tsx` eklendi; `App.tsx` route'larına bağlandı.
+  - `index.html` + `public/favicon_io/site.webmanifest`: favicon seti ve geo/language metadata (`US-TX`, `en-US`) eklendi/düzeltildi.
+  - `scripts/gemini_admin_trend_report.py`: İngilizce çıktı standardı, `locale: en-US`, markdown üretim etiketleri ve f-string quote/syntax hatası düzeltildi.
+  - `.github/workflows/daily-fashion-blog.yml`: cron `09:00 America/Chicago` hedefi için UTC güncellendi.
+  - `.github/workflows/daily-admin-trend-report.yml`: cron `TR 00:00` hedefi için UTC güncellendi.
+  - `public/admin/*.md` ve `public/admin/index.json`: örnek içerik ve özetler İngilizce/US formatına çekildi.
+- SEO/Sitemap kontrolü:
+  - Yeni route eklendiği için `public/sitemap.xml` güncellendi (`/#/terms`, `/#/privacy`).
+  - `public/robots.txt` kontrol edildi; `/admin` disallow korunuyor.

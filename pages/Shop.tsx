@@ -31,7 +31,7 @@ export const Shop: React.FC = () => {
     setFilteredProducts(result);
   }, [currentCategory, searchQuery]);
 
-  const activeCategoryName = CATEGORIES.find(c => c.id === currentCategory)?.name || 'Archive';
+  const activeCategoryName = CATEGORIES.find(c => c.id === currentCategory)?.name || 'All Products';
 
   return (
     <div className="pt-48 pb-32 bg-white min-h-screen">
@@ -39,7 +39,7 @@ export const Shop: React.FC = () => {
         {/* Header */}
         <div className="max-w-2xl mb-24 animate-fade-in">
           <h1 className="text-5xl md:text-6xl font-serif uppercase tracking-widest mb-6">
-            {searchQuery ? `Searching: ${searchQuery}` : `${activeCategoryName} Edit`}
+            {searchQuery ? `Searching: ${searchQuery}` : activeCategoryName}
           </h1>
           <p className="text-xs text-muted uppercase tracking-[0.3em] leading-relaxed max-w-lg">
             {searchQuery 
@@ -88,12 +88,12 @@ export const Shop: React.FC = () => {
 
         {filteredProducts.length === 0 && (
           <div className="py-60 text-center">
-            <p className="text-muted uppercase tracking-widest text-[10px] mb-8">The archive holds no record of this request.</p>
+            <p className="text-muted uppercase tracking-widest text-[10px] mb-8">No matching products were found for this search.</p>
             <button 
               onClick={() => setSearchParams({ cat: 'all' })}
               className="px-8 py-3 border border-black text-[9px] font-bold uppercase tracking-widest hover:bg-black hover:text-white transition-all"
             >
-              Return to Collective
+              Back to All Products
             </button>
           </div>
         )}

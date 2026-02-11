@@ -55,8 +55,7 @@ export const Header: React.FC = () => {
               <Link to="/shop?cat=teacher" className="hover:text-muted transition-colors italic">Teacher</Link>
               <Link to="/shop?cat=bridal" className="hover:text-muted transition-colors italic">Bridal</Link>
               <Link to="/shop?cat=patriotic" className="hover:text-muted transition-colors italic">Liberty</Link>
-              <Link to="/shop" className="hover:text-muted transition-colors">Archive</Link>
-              <Link to="/blog" className="hover:text-muted transition-colors">Blog</Link>
+              <Link to="/shop" className="hover:text-muted transition-colors">All Products</Link>
             </nav>
             <button className="lg:hidden" onClick={() => setIsMenuOpen(true)}>
               <Menu className="w-5 h-5" />
@@ -112,7 +111,7 @@ export const Header: React.FC = () => {
                   </button>
                 </form>
                 <div className="mt-4 flex space-x-6 text-[9px] font-bold uppercase tracking-widest text-muted">
-                  <span>Trending: Teacher Edit</span>
+                  <span>Trending: Teacher</span>
                   <span>Bridal Atelier</span>
                   <span>Comfort Colors</span>
                 </div>
@@ -128,13 +127,13 @@ export const Header: React.FC = () => {
       <div className={`fixed inset-0 bg-white z-[100] transition-transform duration-700 ease-in-out ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-8 h-full flex flex-col">
           <div className="flex justify-between items-center mb-16">
-            <span className="text-xl font-serif tracking-widest uppercase">The Archive</span>
+            <span className="text-xl font-serif tracking-widest uppercase">All Products</span>
             <button onClick={() => setIsMenuOpen(false)}><X className="w-6 h-6" /></button>
           </div>
           <nav className="flex flex-col space-y-10">
             <Link to="/" className="text-3xl font-serif italic">Maison</Link>
             <Link to="/shop" className="text-3xl font-serif italic">All Pieces</Link>
-            <Link to="/shop?cat=teacher" className="text-3xl font-serif italic">The Teacher Edit</Link>
+            <Link to="/shop?cat=teacher" className="text-3xl font-serif italic">Teacher</Link>
             <Link to="/shop?cat=bridal" className="text-3xl font-serif italic">Bridal Atelier</Link>
             <Link to="/shop?cat=patriotic" className="text-3xl font-serif italic">Liberty & Statement</Link>
             <Link to="/shop?cat=healing" className="text-3xl font-serif italic">Stoic & Healing</Link>

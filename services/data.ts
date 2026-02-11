@@ -7,7 +7,7 @@ const CATEGORY_DEFINITIONS: Record<Product['category'], Omit<Category, 'id'>> = 
     description: 'Gifts for bold spirits and soulmate connections. Handcrafted for the modern romantic.'
   },
   aesthetic: {
-    name: 'Aesthetic Archive',
+    name: 'Aesthetic',
     description: 'Quiet luxury and minimalist silhouettes using premium Comfort Colors and Gildan fabrics.'
   },
   healing: {
@@ -19,7 +19,7 @@ const CATEGORY_DEFINITIONS: Record<Product['category'], Omit<Category, 'id'>> = 
     description: 'Inspired by the rhythms of the 70s and the soul of analog sound.'
   },
   teacher: {
-    name: 'Teacher Edit',
+    name: 'Teacher',
     description: 'Academic sophistication for the modern educator. Personalized and premium.'
   },
   patriotic: {
