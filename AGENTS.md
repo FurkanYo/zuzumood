@@ -415,3 +415,18 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
 - SEO/Sitemap kontrolü:
   - Yeni route eklenmedi.
   - `public/sitemap.xml` kontrol edildi; mevcut route seti yeterli, ek güncelleme gerekmedi.
+
+## Son Görev Özeti (2026-02-11 / Mobile Header Düzenleme: Search Menüye Taşıma + Header Blog Link Kaldırma)
+- Kullanıcı geri bildirimi:
+  - Mobilde üst header aksiyon alanındaki arama ikonunun soldaki açılır menü içine taşınması istendi.
+  - Header sağ aksiyondaki `Blog` linkinin kaldırılması istendi; blog erişiminin açılır menüde kalması yeterli görüldü.
+- Yapılanlar:
+  - `components/Header.tsx` içinde sağ aksiyondaki doğrudan `Blog` linki kaldırıldı.
+  - Header'daki arama ikonu `hidden lg:inline-flex` yapısına alındı; masaüstünde arama butonu korunurken mobilde üst satırdan kaldırıldı.
+  - Mobil açılır menüye yeni bir `Search` satırı eklendi (ikon + metin) ve bu aksiyon menüyü kapatıp arama overlay'ini açacak şekilde `openSearchFromMenu` handler'ı bağlandı.
+- Beklenen sonuç:
+  - Mobilde header daha sade görünür ve kullanıcı aramaya doğrudan açılır menü içinden ulaşır.
+  - Header sağ aksiyon alanında tekrar eden blog linki görünmez; blog erişimi tek noktadan (mobile menu) sürer.
+- SEO/Sitemap kontrolü:
+  - Yeni route eklenmedi.
+  - `public/sitemap.xml` kontrol edildi; mevcut route seti bu görev için yeterli, ek güncelleme gerekmedi.

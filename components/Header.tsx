@@ -37,6 +37,11 @@ export const Header: React.FC = () => {
     }
   };
 
+  const openSearchFromMenu = () => {
+    setIsMenuOpen(false);
+    setIsSearchOpen(true);
+  };
+
   return (
     <>
       <div className="fixed w-full z-50">
@@ -70,13 +75,7 @@ export const Header: React.FC = () => {
 
             {/* Right Actions */}
             <div className="flex items-center justify-end space-x-6 text-black">
-              <Link
-                to="/blog"
-                className="text-[9px] font-bold uppercase tracking-[0.25em] hover:text-muted transition-colors"
-              >
-                Blog
-              </Link>
-              <button onClick={() => setIsSearchOpen(!isSearchOpen)} className="group transition-transform hover:scale-110">
+              <button onClick={() => setIsSearchOpen(!isSearchOpen)} className="hidden lg:inline-flex group transition-transform hover:scale-110">
                 <Search className="w-4 h-4" />
               </button>
               <button onClick={() => setIsWishlistOpen(true)} className="relative group transition-transform hover:scale-110">
@@ -133,6 +132,13 @@ export const Header: React.FC = () => {
           <nav className="flex flex-col space-y-10">
             <Link to="/" className="text-3xl font-serif italic">Maison</Link>
             <Link to="/shop" className="text-3xl font-serif italic">All Pieces</Link>
+            <button
+              onClick={openSearchFromMenu}
+              className="inline-flex items-center space-x-3 text-3xl font-serif italic text-left"
+            >
+              <Search className="w-7 h-7" />
+              <span>Search</span>
+            </button>
             <Link to="/shop?cat=teacher" className="text-3xl font-serif italic">Teacher</Link>
             <Link to="/shop?cat=bridal" className="text-3xl font-serif italic">Bridal Atelier</Link>
             <Link to="/shop?cat=patriotic" className="text-3xl font-serif italic">Liberty & Statement</Link>
