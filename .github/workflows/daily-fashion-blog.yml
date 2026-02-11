@@ -2,7 +2,7 @@ name: Daily US Fashion Blog (Gemini)
 
 on:
   schedule:
-    - cron: "15 6 * * *" # 09:15 Europe/Istanbul (UTC+3)
+    - cron: "0 16 * * *" # 10:00 America/Chicago (Texas local, CST)
   workflow_dispatch: {}
 
 permissions:

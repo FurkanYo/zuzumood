@@ -19,7 +19,7 @@ React + TypeScript + Vite tabanlı ZuzuMood storefront projesi.
 
 ## Daily Fashion Blog Automation
 
-Bu repoda GitHub Actions ile her gün ABD moda trend haberlerini toplayıp Gemini ile blog üreten otomasyon bulunur.
+Bu repoda GitHub Actions ile her gün ABD moda trend haberlerini toplayıp Gemini ile blog üreten otomasyon bulunur. Üretilen içerik artık uygulama içindeki `/#/blog` sayfasında listelenir ve okunur.
 
 - Workflow: `.github/workflows/daily-fashion-blog.yml`
 - Script: `scripts/gemini_daily_fashion_blog.py`

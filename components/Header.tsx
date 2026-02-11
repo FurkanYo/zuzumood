@@ -56,6 +56,7 @@ export const Header: React.FC = () => {
               <Link to="/shop?cat=bridal" className="hover:text-muted transition-colors italic">Bridal</Link>
               <Link to="/shop?cat=patriotic" className="hover:text-muted transition-colors italic">Liberty</Link>
               <Link to="/shop" className="hover:text-muted transition-colors">Archive</Link>
+              <Link to="/blog" className="hover:text-muted transition-colors">Blog</Link>
             </nav>
             <button className="lg:hidden" onClick={() => setIsMenuOpen(true)}>
               <Menu className="w-5 h-5" />
@@ -131,6 +132,7 @@ export const Header: React.FC = () => {
             <Link to="/shop?cat=bridal" className="text-3xl font-serif italic">Bridal Atelier</Link>
             <Link to="/shop?cat=patriotic" className="text-3xl font-serif italic">Liberty & Statement</Link>
             <Link to="/shop?cat=healing" className="text-3xl font-serif italic">Stoic & Healing</Link>
+            <Link to="/blog" className="text-3xl font-serif italic">Daily Blog</Link>
           </nav>
           <div className="mt-auto border-t border-gray-100 pt-8 flex flex-col space-y-4">
              <div className="flex space-x-8 text-[10px] font-bold uppercase tracking-[0.3em]">
