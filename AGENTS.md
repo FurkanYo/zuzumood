@@ -35,13 +35,20 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
 - `vite.config.ts`: env yükleme + anahtar inject + alias.
 - `vite-env.d.ts`: Vite `import.meta.env` ve global define tipleri.
 
+## AI Stylist Davranışı (Güncel)
+- Prompt artık **daha kısa, pratik, kullanıcı diline uyumlu** cevap üretmeye odaklıdır.
+- Satın alma/ödeme/kargo niyetli sorularda yanıtın içinde Etsy mağaza linki geçmesi zorunludur: `https://www.etsy.com/shop/ZuzuMood`.
+- Öneri ürün sayısı en fazla **4** ile sınırlandı.
+- Model boş/bozuk `message` döndürürse UI tarafında güvenli fallback mesajı gösterilir.
+- Ürün bağlamına `price` ve `etsyUrl` da eklendi; ürün uydurma riskini azaltır.
+
 ## SEO Notları
 - `index.html` içinde title/description/keywords tanımlı.
 - `public/sitemap.xml` en az `/` ve `/#/shop` içerir.
 - Yeni route eklendiğinde `sitemap.xml` ve gerekirse `robots.txt` güncellenmelidir.
 - HashRouter kullanıldığı için canonical ve sosyal paylaşım meta stratejisi ayrıca değerlendirilmelidir.
 
-## Chatbot Çalışmama Troubleshooting
+## Chatbot Troubleshooting
 1. Tarayıcı console’da `An API Key must be set when running in a browser` görürsen:
    - Netlify environment variables içinde `VITE_GEMINI_API_KEY` tanımlı mı kontrol et.
    - Değişken eklendikten sonra **yeniden deploy** et (eski build’e sonradan eklenen env yansımaz).
@@ -51,6 +58,9 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
    - `index.html` içinde hardcoded `/index.css` referansı olmamalı.
 4. Etsy görsel CORS hataları:
    - Ürün görsellerini etkiler; chatbot text cevap üretimini normalde engellemez.
+5. Yanıtlar aşırı “kurumsal/lüks” ise:
+   - `components/AIStylist.tsx` içindeki `systemInstruction` kurallarını kontrol et.
+   - JSON schema + kısa cevap limiti + dil uyumu maddeleri korunmalı.
 
 ## Geliştirme Komutları
 - `npm install`
@@ -65,9 +75,20 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
 4. Build başarılı mı?
 5. Node modules içinde değişiklik yapılmadı mı?
 6. AI ile ilgili değişiklikte env isimleri dokümante edildi mi?
+7. Chatbot mesaj tonu gerçek kullanıcı sorularında kısa ve net mi?
 
 ## Bilinen Kısıt
 - Etsy export dosyasında doğrudan listing URL yoksa ürün linki Etsy shop search query ile üretilir.
+
+## Son Görev Özeti (2026-02-11)
+- Kullanıcı şikâyeti: chatbot çok uzun ve “saçma/marka metni” gibi cevaplar üretiyordu.
+- Yapılanlar:
+  - `components/AIStylist.tsx` prompt yeniden yazıldı (kısa, net, kullanıcı dilinde).
+  - Satın alma soruları için Etsy URL zorunluluğu eklendi.
+  - Öneri ürün ID limiti 4 yapıldı.
+  - Boş `message` için güvenli fallback metni eklendi.
+- SEO/Sitemap kontrolü:
+  - Yeni route eklenmedi, bu yüzden `public/sitemap.xml` değişmedi.
 
 ## Teslim Standartları
 - Kod değişikliği sonrası build çalıştır.
