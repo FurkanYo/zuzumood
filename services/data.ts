@@ -134,12 +134,25 @@ const getCell = (cells: string[], columnName: string) => {
   return columnIndex >= 0 ? (cells[columnIndex] ?? '').trim() : '';
 };
 
+const getAllProductImages = (cells: string[]) => {
+  const rawImages = Array.from({ length: 10 }, (_, idx) => getCell(cells, `IMAGE${idx + 1}`));
+  const seen = new Set<string>();
+  return rawImages.filter((imageUrl) => {
+    if (!imageUrl || seen.has(imageUrl)) {
+      return false;
+    }
+    seen.add(imageUrl);
+    return true;
+  });
+};
+
 export const PRODUCTS: Product[] = dataRows
   .map((cells, rowIndex) => {
     const title = getCell(cells, 'TITLE');
     const description = getCell(cells, 'DESCRIPTION');
     const price = Number.parseFloat(getCell(cells, 'PRICE'));
-    const image = getCell(cells, 'IMAGE1');
+    const images = getAllProductImages(cells);
+    const image = images[0] ?? '';
     const sku = getCell(cells, 'SKU');
     const tags = getCell(cells, 'TAGS');
     const materials = getCell(cells, 'MATERIALS');
@@ -168,6 +181,7 @@ export const PRODUCTS: Product[] = dataRows
       price,
       category: getCategory(title, tags),
       image,
+      images,
       description,
       details: details.length > 0 ? details : ['Etsy exclusive design'],
       isNew: rowIndex < 8,

@@ -63,13 +63,13 @@ export const Header: React.FC = () => {
 
             {/* Center Brand */}
             <div className="flex justify-center">
-              <Link to="/" className={`text-2xl md:text-3xl font-serif tracking-[0.2em] uppercase transition-opacity hover:opacity-70 ${isScrolled || isSearchOpen ? 'text-black' : 'text-black md:text-white'}`}>
+              <Link to="/" className="text-2xl md:text-3xl font-serif tracking-[0.2em] uppercase text-black transition-opacity hover:opacity-70">
                 ZuzuMood
               </Link>
             </div>
 
             {/* Right Actions */}
-            <div className={`flex items-center justify-end space-x-6 ${isScrolled || isSearchOpen ? 'text-black' : 'text-black md:text-white'}`}>
+            <div className="flex items-center justify-end space-x-6 text-black">
               <Link
                 to="/blog"
                 className="text-[9px] font-bold uppercase tracking-[0.25em] hover:text-muted transition-colors"
@@ -141,7 +141,6 @@ export const Header: React.FC = () => {
           </nav>
           <div className="mt-auto border-t border-gray-100 pt-8 flex flex-col space-y-4">
              <div className="flex space-x-8 text-[10px] font-bold uppercase tracking-[0.3em]">
-               <a href="https://www.instagram.com" target="_blank" rel="noreferrer">Instagram</a>
                <a href="https://www.etsy.com/shop/ZuzuMood" target="_blank" rel="noreferrer">Etsy Store</a>
              </div>
              <p className="text-[8px] uppercase tracking-widest text-muted">Orders Fulfilled Globally via Etsy</p>
