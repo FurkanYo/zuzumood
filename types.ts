@@ -1,4 +1,3 @@
-
 export interface Product {
   id: string;
   title: string;
@@ -6,6 +5,7 @@ export interface Product {
   originalPrice?: number;
   category: 'valentines' | 'aesthetic' | 'healing' | 'music' | 'teacher' | 'patriotic' | 'bridal' | 'family';
   image: string;
+  images: string[];
   isNew?: boolean;
   isOnSale?: boolean;
   description: string;

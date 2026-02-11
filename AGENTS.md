@@ -365,3 +365,53 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
 - SEO/Sitemap kontrolü:
   - Yeni route eklenmedi.
   - `public/sitemap.xml` kontrol edildi; mevcut route seti yeterli, ek güncelleme gerekmedi.
+
+## Son Görev Özeti (2026-02-11 / Admin Bot Kapsam Daraltma: Sadece T-Shirt, Hoodie, Sweatshirt)
+- Kullanıcı geri bildirimi:
+  - Admin önerileri genel moda alanına fazla açılıyor; ekip yalnızca t-shirt, hoodie ve sweatshirt üretimi yaptığı için AI çıktısının sadece bu üç kategoriye odaklanması istendi.
+- Yapılanlar:
+  - `scripts/gemini_admin_trend_report.py` içindeki RSS sorguları, genel moda/aksesuar sinyallerinden çıkarılıp doğrudan Etsy t-shirt/hoodie/sweatshirt odaklı sorgulara çevrildi.
+  - Prompt kuralları sertleştirildi:
+    - yalnızca t-shirt/hoodie/sweatshirt fırsatları,
+    - başka ürün ailelerini (tote, mug, jewelry, home decor vb.) önermeme zorunluluğu eklendi.
+  - `ALLOWED_TEXTILE_TYPES` guard eklendi; modelin döndürdüğü `textileProductStrategy` öğeleri yalnızca izinli ürün tipleriyle (`t-shirt`, `tee`, `hoodie`, `sweatshirt`) kabul ediliyor.
+  - Fallback strateji listesinde izin dışı ürün örneği kaldırıldı; teacher odaklı örnek de sweatshirt formatına çevrildi.
+- Beklenen sonuç:
+  - Admin botu artık araştırma ve öneri katmanında sadece ZuzuMood üretim kapsamına uygun tekstil ürünleri (t-shirt/hoodie/sweatshirt) üzerinden yol haritası sunar.
+  - İzin dışı kategori sapmaları normalize katmanında otomatik filtrelenir.
+- SEO/Sitemap kontrolü:
+  - Yeni route eklenmedi.
+  - `public/sitemap.xml` kontrol edildi; mevcut route seti yeterli, ek güncelleme gerekmedi.
+
+## Son Görev Özeti (2026-02-11 / Shop Kategori Stabilizasyonu + Product Detail Zenginleştirme)
+- Kullanıcı geri bildirimi:
+  - Shop kategorileri birkaç geçişten sonra bozulup tüm ürünleri gösteriyordu.
+  - Header'da ana logo beyaz kaldığı senaryoda görünürlük sorunu vardı; koyu görünüm istendi.
+  - Footer'daki `Connect` alanı (Instagram/Pinterest/newsletter) şimdilik kaldırılmak istendi.
+  - Etsy listelerinde çoklu görsel olmasına rağmen sitede yalnızca 1-2 görsel görünüyordu; tüm görsellerin gösterilmesi talep edildi.
+  - Product detail içinde shipping/return, Etsy Purchase Protection, seller info bloklarının görünür olması istendi.
+  - "More from this shop / You may also like" bölümünde daha fazla ürün ve sağ-sol oklarla gezinme talep edildi.
+- Yapılanlar:
+  - `pages/Shop.tsx` kategori eşleme ve URL param yönetimi yeniden düzenlendi:
+    - kategori normalize lookup map eklendi,
+    - kategori değiştirme `setSearchParams(prev => ...)` ile stabil hale getirildi,
+    - arama temizleme akışı `cat` paramını koruyacak şekilde güncellendi.
+  - `components/Header.tsx` içinde ana logo rengi kalıcı `text-black` yapıldı; header aksiyon metinleri de koyu tema görünürlüğüne sabitlendi.
+  - `components/Footer.tsx` içinde `Connect` kolonu kaldırıldı; footer 3 kolonlu sade yapıya çekildi.
+  - `types.ts` ve `services/data.ts` güncellendi:
+    - ürün modeline `images: string[]` eklendi,
+    - CSV'deki `IMAGE1..IMAGE10` alanları parse edilip tekilleştirilerek ürünlere bağlandı.
+  - `pages/ProductDetail.tsx` genişletildi:
+    - çoklu görsel galerisi (seçilebilir thumbnail) eklendi,
+    - shipping/returns, "Did you know?" ve "Meet your seller" bilgi blokları eklendi,
+    - öneri alanı "More from this shop" başlığıyla genişletildi,
+    - öneri kartları yatay kaydırma + sağ/sol ok kontrolleriyle çoğaltıldı (12 ürüne kadar).
+- Beklenen sonuç:
+  - Kategori sekmeleri ardışık kullanımda da doğru filtreleme yapar.
+  - Header logo görünürlüğü açık arka planda kaybolmaz.
+  - Footer’da henüz aktif olmayan sosyal bağlantılar görünmez.
+  - Product detail Etsy’deki çoklu görsel setini daha eksiksiz yansıtır.
+  - Kullanıcı, ürün altı önerilerde daha fazla ürünü oklarla gezebilir.
+- SEO/Sitemap kontrolü:
+  - Yeni route eklenmedi.
+  - `public/sitemap.xml` kontrol edildi; mevcut route seti yeterli, ek güncelleme gerekmedi.

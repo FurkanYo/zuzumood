@@ -3,41 +3,34 @@ import { useSearchParams } from 'react-router-dom';
 import { PRODUCTS, CATEGORIES } from '../services/data';
 import { ProductCard } from '../components/ProductCard';
 
-const normalizeCategoryParam = (value: string | null) => {
-  if (!value) {
-    return 'all';
-  }
-
-  const normalized = value
+const normalizeCategoryKey = (value: string | null) =>
+  (value || '')
     .toLowerCase()
     .trim()
     .replace(/&/g, 'and')
     .replace(/[^a-z0-9]+/g, '-');
 
-  if (normalized === 'all' || normalized === 'all-products') {
-    return 'all';
-  }
+const CATEGORY_LOOKUP = new Map<string, string>([
+  ['all', 'all'],
+  ['all-products', 'all'],
+  ...CATEGORIES.flatMap((category) => {
+    const normalizedName = normalizeCategoryKey(category.name);
+    return [
+      [category.id, category.id],
+      [normalizedName, category.id],
+    ] as Array<[string, string]>;
+  }),
+]);
 
-  const matchById = CATEGORIES.find((category) => category.id === normalized);
-  if (matchById) {
-    return matchById.id;
-  }
-
-  const matchByName = CATEGORIES.find((category) => {
-    const normalizedName = category.name
-      .toLowerCase()
-      .replace(/&/g, 'and')
-      .replace(/[^a-z0-9]+/g, '-');
-    return normalizedName === normalized;
-  });
-
-  return matchByName?.id ?? 'all';
+const getCategoryFromParam = (value: string | null) => {
+  const normalized = normalizeCategoryKey(value);
+  return CATEGORY_LOOKUP.get(normalized) ?? 'all';
 };
 
 export const Shop: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const currentCategory = normalizeCategoryParam(searchParams.get('cat'));
-  const searchQuery = searchParams.get('q') || '';
+  const currentCategory = getCategoryFromParam(searchParams.get('cat'));
+  const searchQuery = (searchParams.get('q') || '').trim();
 
   const filteredProducts = useMemo(() => {
     let result = PRODUCTS;
@@ -59,36 +52,53 @@ export const Shop: React.FC = () => {
     return result;
   }, [currentCategory, searchQuery]);
 
-  const activeCategoryName = CATEGORIES.find(c => c.id === currentCategory)?.name || 'All Products';
+  const activeCategoryName = CATEGORIES.find((category) => category.id === currentCategory)?.name || 'All Products';
+
+  const applyCategoryFilter = (categoryId: string) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set('cat', categoryId);
+      return next;
+    });
+  };
+
+  const clearSearch = () => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete('q');
+      if (!next.get('cat')) {
+        next.set('cat', 'all');
+      }
+      return next;
+    });
+  };
 
   return (
     <div className="pt-48 pb-32 bg-white min-h-screen">
       <div className="container mx-auto px-6">
-        {/* Header */}
         <div className="max-w-2xl mb-24 animate-fade-in">
           <h1 className="text-5xl md:text-6xl font-serif uppercase tracking-widest mb-6">
             {searchQuery ? `Searching: ${searchQuery}` : activeCategoryName}
           </h1>
           <p className="text-xs text-muted uppercase tracking-[0.3em] leading-relaxed max-w-lg">
-            {searchQuery 
+            {searchQuery
               ? `Results from the ZuzuMood collective archive matching your search.`
-              : (CATEGORIES.find(c => c.id === currentCategory)?.description || 'Exploring the intersection of mood and materiality through curated silhouettes.')
+              : (CATEGORIES.find((category) => category.id === currentCategory)?.description || 'Exploring the intersection of mood and materiality through curated silhouettes.')
             }
           </p>
         </div>
 
-        {/* Filter Tabs */}
         <div className="flex flex-wrap gap-8 border-b border-gray-100 pb-8 mb-16 overflow-x-auto no-scrollbar">
-          <button 
-            onClick={() => setSearchParams({ cat: 'all' })}
-            className={`text-[9px] font-bold uppercase tracking-[0.4em] whitespace-nowrap transition-all ${currentCategory === 'all' && !searchQuery ? 'text-black border-b border-black pb-1' : 'text-muted hover:text-black'}`}
+          <button
+            onClick={() => applyCategoryFilter('all')}
+            className={`text-[9px] font-bold uppercase tracking-[0.4em] whitespace-nowrap transition-all ${currentCategory === 'all' ? 'text-black border-b border-black pb-1' : 'text-muted hover:text-black'}`}
           >
             All Pieces
           </button>
-          {CATEGORIES.map(cat => (
-            <button 
+          {CATEGORIES.map((cat) => (
+            <button
               key={cat.id}
-              onClick={() => setSearchParams({ cat: cat.id })}
+              onClick={() => applyCategoryFilter(cat.id)}
               className={`text-[9px] font-bold uppercase tracking-[0.4em] whitespace-nowrap transition-all ${currentCategory === cat.id ? 'text-black border-b border-black pb-1' : 'text-muted hover:text-black'}`}
             >
               {cat.name}
@@ -96,12 +106,11 @@ export const Shop: React.FC = () => {
           ))}
         </div>
 
-        {/* Results Info */}
         <div className="flex justify-between items-center mb-12">
           <div className="flex items-center space-x-4">
             <span className="text-[9px] font-bold uppercase tracking-widest text-muted">{filteredProducts.length} Results</span>
             {searchQuery && (
-              <button onClick={() => setSearchParams({ cat: 'all' })} className="text-[8px] uppercase tracking-widest underline opacity-50 hover:opacity-100">Clear Search</button>
+              <button onClick={clearSearch} className="text-[8px] uppercase tracking-widest underline opacity-50 hover:opacity-100">Clear Search</button>
             )}
           </div>
           <div className="flex space-x-6 text-[9px] font-bold uppercase tracking-widest">
@@ -109,16 +118,15 @@ export const Shop: React.FC = () => {
           </div>
         </div>
 
-        {/* Product Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-20">
-          {filteredProducts.map(p => <ProductCard key={p.id} product={p} />)}
+          {filteredProducts.map((p) => <ProductCard key={p.id} product={p} />)}
         </div>
 
         {filteredProducts.length === 0 && (
           <div className="py-60 text-center">
             <p className="text-muted uppercase tracking-widest text-[10px] mb-8">No matching products were found for this search.</p>
-            <button 
-              onClick={() => setSearchParams({ cat: 'all' })}
+            <button
+              onClick={() => applyCategoryFilter('all')}
               className="px-8 py-3 border border-black text-[9px] font-bold uppercase tracking-widest hover:bg-black hover:text-white transition-all"
             >
               Back to All Products

@@ -35,17 +35,19 @@ MAX_NEWS = 40
 SELECTED_NEWS = 14
 
 SEARCH_QUERIES = [
-    "Etsy trend report USA fashion",
-    "US fashion trend forecast next 30 days",
-    "bridal accessories trend US Etsy",
-    "wedding guest outfit trend America",
-    "boho wedding trend Etsy US",
-    "coquette bow fashion trend US",
-    "TikTok fashion trend forecast US",
-    "Pinterest predict fashion US",
-    "handmade jewelry trend Etsy USA",
-    "western chic trend Texas fashion",
+    "Etsy t-shirt trend USA",
+    "Etsy hoodie trend USA",
+    "Etsy sweatshirt trend USA",
+    "bridal t-shirt trend US Etsy",
+    "bachelorette sweatshirt trend US Etsy",
+    "graphic hoodie trend US fashion",
+    "TikTok t-shirt trend forecast US",
+    "Pinterest hoodie trend US",
+    "teacher sweatshirt trend Etsy USA",
+    "western graphic t-shirt trend Texas",
 ]
+
+ALLOWED_TEXTILE_TYPES = ("t-shirt", "tee", "hoodie", "sweatshirt")
 
 
 @dataclass
@@ -163,7 +165,8 @@ def build_report_payload(client: genai.Client, articles: list[Article], date_str
 You are the internal strategy analyst for ZuzuMood design team.
 Return ONLY valid JSON.
 Research signals must come from US market sources, but ALL narrative fields in output must be Turkish.
-Focus on what can sell on Etsy in the US market.\nAnswer designer-facing questions explicitly: which textile-based product types to prioritize, what visual direction to design, and why those decisions can convert in the next 30 days.
+Focus ONLY on Etsy opportunities for t-shirt, hoodie, and sweatshirt categories in the US market.
+Do not suggest any other product families (no tote, mug, jewelry, accessory, home decor, etc.).\nAnswer designer-facing questions explicitly: which t-shirt/hoodie/sweatshirt directions to prioritize, what visual direction to design, and why those decisions can convert in the next 30 days.
 
 Date: {date_str}
 
@@ -172,7 +175,7 @@ News and trend signals:
 
 Rules:
 - Produce practical guidance for designers for now, +15 days, +20 days, +30 days.
-- Include Etsy-friendly product ideas, motif/color/material guidance, and quick execution hints.
+- Include Etsy-friendly t-shirt/hoodie/sweatshirt product ideas, motif/color/material guidance, and quick execution hints.
 - Include specific example links from provided sources in every horizon section.
 - Keep tone direct, clear, and workshop-ready for a Turkish-speaking internal team.
 - Never use markdown in JSON fields.
@@ -311,7 +314,8 @@ def enforce_payload_rules(payload: dict[str, Any], articles: list[Article], date
         design_direction = str(item.get("designDirection") or "").strip()
         price_band = str(item.get("priceBandUsd") or "").strip()
         production_note = str(item.get("productionNote") or "").strip()
-        if product_type:
+        low_type = product_type.lower()
+        if product_type and any(allowed in low_type for allowed in ALLOWED_TEXTILE_TYPES):
             normalized_textile_strategy.append(
                 {
                     "textileProductType": product_type,
@@ -346,11 +350,11 @@ def enforce_payload_rules(payload: dict[str, Any], articles: list[Article], date
                 "productionNote": "Sipariş formunda isim ve tarih formatını doğrulayan net alanlar kullanın.",
             },
             {
-                "textileProductType": "Teacher tote + tee mini set",
-                "whySellNow": "Dönem geçişlerinde hediye odaklı ve pratik kullanım ürünlerine talep yükseliyor.",
-                "designDirection": "Aynı motif ailesini hem tote hem tee üzerinde ölçek farkıyla uygulayın.",
-                "priceBandUsd": "24-46",
-                "productionNote": "Set ve tekli ürün listelemesini ayrı yapıp çapraz satış bağlantısı kurun.",
+                "textileProductType": "Teacher quote crewneck sweatshirt",
+                "whySellNow": "Okul dönemi ve hediye sezonunda öğretmen temalı sweatshirt aramaları istikrarlı talep üretir.",
+                "designDirection": "Uzak mesafeden okunabilen net tipografi + küçük ikon detaylarıyla temiz kompozisyon kurun.",
+                "priceBandUsd": "34-48",
+                "productionNote": "Aynı tasarımın 2 renk varyantını stoklayıp mockup testleriyle kazanan rengi hızlı belirleyin.",
             },
         ][: 4 - len(normalized_textile_strategy)]
 
