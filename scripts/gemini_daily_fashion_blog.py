@@ -180,6 +180,35 @@ def _normalize_url_for_match(url: str) -> str:
     return f"{netloc}{path}{query}"
 
 
+def _normalize_title_for_match(title: str) -> str:
+    return re.sub(r"\s+", " ", title).strip().lower()
+
+
+def _resolve_source_url(
+    raw_url: str,
+    source_title: str,
+    fallback_url: str,
+    allowed_urls: set[str],
+    canonical_url_map: dict[str, str],
+    title_to_url: dict[str, str],
+) -> str:
+    source_url = clean_url(raw_url.strip())
+    if source_url in allowed_urls:
+        return source_url
+
+    if source_url:
+        normalized = _normalize_url_for_match(source_url)
+        matched = canonical_url_map.get(normalized)
+        if matched:
+            return matched
+
+    normalized_title = _normalize_title_for_match(source_title)
+    if normalized_title and normalized_title in title_to_url:
+        return title_to_url[normalized_title]
+
+    return fallback_url
+
+
 def _pick_content_type(date_slug: str) -> str:
     # deterministic rotation based on date for predictable daily variety
     ordinal = sum(ord(ch) for ch in date_slug)
@@ -306,7 +335,12 @@ def enforce_payload_rules(
 ) -> dict[str, Any]:
     allowed_urls = {clean_url(a.url) for a in articles}
     canonical_url_map = {_normalize_url_for_match(url): url for url in allowed_urls}
-    title_to_url = {a.title.strip().lower(): clean_url(a.url) for a in articles if a.title.strip()}
+    title_to_url = {
+        _normalize_title_for_match(a.title): clean_url(a.url)
+        for a in articles
+        if _normalize_title_for_match(a.title)
+    }
+    fallback_url = clean_url(articles[0].url)
 
     payload["contentType"] = payload.get("contentType") or content_type
     payload["summary"] = str(payload.get("summary", "")).strip()
@@ -341,19 +375,14 @@ def enforce_payload_rules(
     for section in sections:
         if not isinstance(section, dict):
             raise ValueError("section entry must be object")
-        source_url = clean_url(str(section.get("sourceUrl", "")).strip())
-        if source_url not in allowed_urls:
-            normalized = _normalize_url_for_match(source_url)
-            source_url = canonical_url_map.get(normalized, source_url)
-
-        if source_url not in allowed_urls:
-            source_title = str(section.get("sourceTitle", "")).strip().lower()
-            if source_title and source_title in title_to_url:
-                source_url = title_to_url[source_title]
-
-        if source_url not in allowed_urls:
-            source_url = articles[0].url
-
+        source_url = _resolve_source_url(
+            raw_url=str(section.get("sourceUrl", "")),
+            source_title=str(section.get("sourceTitle", "")),
+            fallback_url=fallback_url,
+            allowed_urls=allowed_urls,
+            canonical_url_map=canonical_url_map,
+            title_to_url=title_to_url,
+        )
         section["sourceUrl"] = source_url
 
     validations = payload.get("trendValidation", [])
@@ -371,20 +400,19 @@ def enforce_payload_rules(
             raise ValueError("trendValidation item must include evidenceSources")
         cleaned_evidence: list[str] = []
         for url in evidence:
-            raw_url = clean_url(str(url).strip())
-            if not raw_url:
-                continue
-
-            matched_url = raw_url
-            if matched_url not in allowed_urls:
-                normalized = _normalize_url_for_match(raw_url)
-                matched_url = canonical_url_map.get(normalized, raw_url)
-
-            if matched_url in allowed_urls:
+            matched_url = _resolve_source_url(
+                raw_url=str(url),
+                source_title="",
+                fallback_url="",
+                allowed_urls=allowed_urls,
+                canonical_url_map=canonical_url_map,
+                title_to_url=title_to_url,
+            )
+            if matched_url:
                 cleaned_evidence.append(matched_url)
 
         if not cleaned_evidence:
-            cleaned_evidence = [articles[0].url]
+            cleaned_evidence = [fallback_url]
         validation["evidenceSources"] = cleaned_evidence
 
     seo = payload.get("seo", {})
