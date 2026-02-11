@@ -4,6 +4,8 @@ import { Sparkles, X, MessageSquare, Send, Loader2 } from 'lucide-react';
 import { PRODUCTS } from '../services/data';
 import { Link } from 'react-router-dom';
 
+const ETSY_SHOP_URL = 'https://www.etsy.com/shop/ZuzuMood';
+
 export const AIStylist: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -38,25 +40,30 @@ export const AIStylist: React.FC = () => {
       const ai = new GoogleGenAI({ apiKey: geminiApiKey });
       
       const systemInstruction = `
-        You are the ZuzuMood AI Stylist. ZuzuMood is a high-end minimalist apparel studio.
-        
-        BRAND FACTS:
-        - We are based in Texas, USA.
-        - Website: zuzumood.com (This is our official lookbook).
-        - Sales: We sell EXCLUSIVELY on Etsy. Never suggest buying directly on our website.
-        - Production: Every single design is created 100% in-house by our Texas design team. We are not resellers.
-        - Materials: We primarily use premium Comfort Colors 1717 and heavyweight fleece.
-        
-        BEHAVIOR:
-        - Tone: Sophisticated, Texas-warmth, minimalist, and honest.
-        - Goal: Help users find the right "mood-wear" from our archive.
-        - Constraint: Recommend only products from the list provided below.
-        - Language: English only.
-        
-        PRODUCT ARCHIVE:
-        ${JSON.stringify(PRODUCTS.map(p => ({ id: p.id, title: p.title, category: p.category, description: p.description })))}
-        
-        FORMAT: Respond in JSON format only.
+You are ZuzuMood AI assistant for an e-commerce storefront.
+
+Rules:
+- Be practical, direct, and friendly. Avoid luxury-brand storytelling unless the user asks for it.
+- Reply in the same language as the user.
+- Keep answers short (max 3-4 concise sentences).
+- If user asks how to buy/order/payment/shipping, clearly say purchases are made on Etsy and include this exact URL: ${ETSY_SHOP_URL}
+- If user asks about a specific product, use only products from the archive below.
+- Recommend at most 4 relevant product IDs.
+- Never invent products or policies not present in the archive/context.
+
+Output requirements:
+- Return ONLY JSON matching the schema.
+- "message" must be plain text (no markdown, no bullet list unless user explicitly asks).
+
+Product archive:
+${JSON.stringify(PRODUCTS.map((p) => ({
+  id: p.id,
+  title: p.title,
+  category: p.category,
+  price: p.price,
+  description: p.description,
+  etsyUrl: p.etsyUrl
+})))}
       `;
 
       const response = await ai.models.generateContent({
@@ -80,9 +87,16 @@ export const AIStylist: React.FC = () => {
 
       // The simplest and most direct way to get the generated text content is by accessing the .text property.
       const data = JSON.parse(response.text || '{}');
-      setChatHistory(prev => [...prev, { role: 'model', text: data.message }]);
+      const assistantMessage = typeof data.message === 'string' && data.message.trim()
+        ? data.message.trim()
+        : `Sipariş vermek için Etsy mağazamızı kullanabilirsin: ${ETSY_SHOP_URL}`;
+
+      setChatHistory(prev => [...prev, { role: 'model', text: assistantMessage }]);
       
-      const suggested = PRODUCTS.filter(p => data.recommendedProductIds?.includes(p.id));
+      const recommendedIds = Array.isArray(data.recommendedProductIds)
+        ? data.recommendedProductIds.slice(0, 4)
+        : [];
+      const suggested = PRODUCTS.filter((p) => recommendedIds.includes(p.id));
       setRecommendations(suggested);
 
     } catch (err) {
