@@ -430,3 +430,24 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
 - SEO/Sitemap kontrolü:
   - Yeni route eklenmedi.
   - `public/sitemap.xml` kontrol edildi; mevcut route seti bu görev için yeterli, ek güncelleme gerekmedi.
+
+## Son Görev Özeti (2026-02-11 / Sitemap Kapsamını Maksimuma Çıkarma, Admin Hariç)
+- Kullanıcı geri bildirimi:
+  - Sitemap içinde erişilebilir tüm içeriklerin yer alması istendi.
+  - SEO için sitemap kapsamı güçlendirilmeli, ancak `/admin` kesinlikle eklenmemeliydi.
+- Yapılanlar:
+  - `scripts/generate_sitemap.py` eklendi; sitemap üretimi manuel düzenleme yerine veriye dayalı otomatik üretim modeline geçirildi.
+  - Script; temel route'lar (`/`, `/#/shop`, `/#/blog`, `/#/terms`, `/#/privacy`) yanında:
+    - shop kategori URL'lerini (`/#/shop?cat=...`),
+    - CSV'den türetilen tüm geçerli ürün detay URL'lerini (`/#/product/:id`),
+    - blog index'teki tüm post URL'lerini (`/#/blog?post=<slug>`) otomatik ekler.
+  - `public/sitemap.xml` script ile yeniden üretildi ve kapsam genişletildi.
+  - `/admin` route'u ve `/admin` içerikleri bilinçli şekilde sitemap dışında bırakıldı.
+- Beklenen sonuç:
+  - Sitemap artık sitenin indekslenebilir içeriklerinin büyük bölümünü kapsar.
+  - Yeni ürün/blog içeriği geldikçe script tekrar çalıştırılarak sitemap güncel tutulur.
+  - Admin alanı gizli kalır; SEO indeksine taşınmaz.
+- SEO/Sitemap kontrolü:
+  - `/admin` eklenmedi.
+  - Blog post query URL'leri ve ürün detay URL'leri eklendi.
+  - `robots.txt` içindeki `Disallow: /admin` kuralı korunur.
