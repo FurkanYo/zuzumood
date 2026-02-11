@@ -39,6 +39,7 @@ MAX_NEWS = 24
 SELECTED_NEWS = 10
 MIN_WORDS = 800
 MAX_WORDS = 1400
+HARD_MAX_WORDS = MAX_WORDS + 250
 
 CONTENT_TYPES = [
     "Trend report",
@@ -215,6 +216,16 @@ def _pick_content_type(date_slug: str) -> str:
     return CONTENT_TYPES[ordinal % len(CONTENT_TYPES)]
 
 
+def _truncate_words(text: str, max_words: int) -> str:
+    cleaned = re.sub(r"\s+", " ", str(text or "")).strip()
+    if max_words <= 0 or not cleaned:
+        return ""
+    words = cleaned.split(" ")
+    if len(words) <= max_words:
+        return cleaned
+    return " ".join(words[:max_words]).rstrip(" ,;:-") + "..."
+
+
 def build_blog_payload(client: genai.Client, articles: list[Article], date_str: str) -> dict[str, Any]:
     content_type = _pick_content_type(date_str)
     source_lines = "\n".join([f"- {a.title} | {a.source} | {a.url}" for a in articles])
@@ -343,7 +354,7 @@ def enforce_payload_rules(
     fallback_url = clean_url(articles[0].url)
 
     payload["contentType"] = payload.get("contentType") or content_type
-    payload["summary"] = str(payload.get("summary", "")).strip()
+    payload["summary"] = _truncate_words(payload.get("summary", ""), 24)
     if "etsy" not in payload["summary"].lower() and "zuzumood" not in payload["summary"].lower():
         payload["summary"] = (payload["summary"] + " Discover matching pieces on ZuzuMood Etsy.").strip()
 
@@ -375,6 +386,12 @@ def enforce_payload_rules(
     for section in sections:
         if not isinstance(section, dict):
             raise ValueError("section entry must be object")
+        section["heading"] = _truncate_words(section.get("heading", "Trend highlight"), 8)
+        section["editorial"] = _truncate_words(section.get("editorial", ""), 40)
+        section["styleIdea"] = _truncate_words(section.get("styleIdea", ""), 14)
+        section["seenOn"] = _truncate_words(section.get("seenOn", ""), 8)
+        section["spottedIn"] = _truncate_words(section.get("spottedIn", ""), 8)
+        section["sourceTitle"] = _truncate_words(section.get("sourceTitle", "Source"), 12)
         source_url = _resolve_source_url(
             raw_url=str(section.get("sourceUrl", "")),
             source_title=str(section.get("sourceTitle", "")),
@@ -392,9 +409,11 @@ def enforce_payload_rules(
     for validation in validations:
         if not isinstance(validation, dict):
             raise ValueError("trendValidation item must be object")
+        validation["claim"] = _truncate_words(validation.get("claim", "Trend signal"), 12)
         checks = validation.get("checksPassed", [])
         if not isinstance(checks, list) or len(checks) < 2:
             raise ValueError("each trendValidation item must pass at least 2 checks")
+        validation["checksPassed"] = [_truncate_words(item, 6) for item in checks if _truncate_words(item, 6)]
         evidence = validation.get("evidenceSources", [])
         if not isinstance(evidence, list) or not evidence:
             raise ValueError("trendValidation item must include evidenceSources")
@@ -425,6 +444,7 @@ def enforce_payload_rules(
     if "zuzumood" not in meta_description.lower() and "etsy" not in meta_description.lower():
         meta_description = f"{meta_description} Explore ZuzuMood Etsy."[:155]
     payload["seo"] = {"metaTitle": meta_title[:60], "metaDescription": meta_description[:155]}
+    payload["closing"] = _truncate_words(payload.get("closing", ""), 50)
 
     return payload
 
@@ -534,7 +554,7 @@ def to_markdown(payload: dict[str, Any], date_iso: str, image_path: str) -> str:
 
     markdown = "\n".join(lines).strip() + "\n"
     word_count = len(re.findall(r"\b\w+\b", markdown))
-    if word_count < MIN_WORDS or word_count > MAX_WORDS + 250:
+    if word_count < MIN_WORDS or word_count > HARD_MAX_WORDS:
         raise ValueError(f"Generated markdown word count out of expected range: {word_count}")
     return markdown
 

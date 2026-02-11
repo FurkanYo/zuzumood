@@ -174,3 +174,22 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
   - Workflow, Gemini çıktısındaki URL/title format sapmalarına rağmen payload'u normalize ederek üretime devam eder.
 - SEO/Sitemap kontrolü:
   - Yeni route eklenmedi; `public/sitemap.xml` kontrol edildi, `/`, `/#/shop`, `/#/blog` mevcut ve yeterli.
+
+## Son Görev Özeti (2026-02-11 / Blog Word Count Guard Düzeltmesi)
+- Kullanıcı geri bildirimi: `generate-daily-blog` job'ı `ValueError: Generated markdown word count out of expected range: 2007` hatasıyla düşüyordu.
+- Kök neden:
+  - Gemini bazı günlerde section/editoryal blokları aşırı uzun üretebildiği için markdown son çıktısı üst limite taşıyordu.
+  - Script, sadece en sonda kelime sayısı doğruluyor; aşım durumunda normalize etmeden job'ı fail ediyordu.
+- Yapılanlar:
+  - `scripts/gemini_daily_fashion_blog.py` içine `_truncate_words` yardımcı fonksiyonu eklendi.
+  - `enforce_payload_rules` içinde aşağıdaki alanlara koruyucu kelime limiti eklendi:
+    - `summary`
+    - `sections[].heading`, `editorial`, `styleIdea`, `seenOn`, `spottedIn`, `sourceTitle`
+    - `trendValidation[].claim`, `checksPassed[]`
+    - `closing`
+  - Üst limit kontrolü için `HARD_MAX_WORDS` sabiti tanımlandı ve markdown doğrulamasında kullanıldı.
+- Beklenen sonuç:
+  - Aşırı uzun model çıktılarında içerik kontrollü kısaltılarak markdown toplam kelime sayısı güvenli aralıkta tutulur.
+  - Workflow gereksiz şekilde fail etmek yerine üretime devam eder.
+- SEO/Sitemap kontrolü:
+  - Yeni route eklenmedi; `public/sitemap.xml` kontrol edildi, `/`, `/#/shop`, `/#/blog` mevcut ve yeterli.
