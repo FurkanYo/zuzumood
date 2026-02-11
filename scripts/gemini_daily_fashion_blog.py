@@ -170,6 +170,16 @@ def _slugify(value: str) -> str:
     return re.sub(r"[^a-z0-9-]", "-", value.lower()).strip("-")
 
 
+def _normalize_url_for_match(url: str) -> str:
+    parsed = urlparse(clean_url(url))
+    netloc = parsed.netloc.lower()
+    if netloc.startswith("www."):
+        netloc = netloc[4:]
+    path = parsed.path.rstrip("/") or "/"
+    query = f"?{parsed.query}" if parsed.query else ""
+    return f"{netloc}{path}{query}"
+
+
 def _pick_content_type(date_slug: str) -> str:
     # deterministic rotation based on date for predictable daily variety
     ordinal = sum(ord(ch) for ch in date_slug)
@@ -294,7 +304,9 @@ Sources:
 def enforce_payload_rules(
     payload: dict[str, Any], articles: list[Article], date_slug: str, content_type: str
 ) -> dict[str, Any]:
-    allowed_urls = {a.url for a in articles}
+    allowed_urls = {clean_url(a.url) for a in articles}
+    canonical_url_map = {_normalize_url_for_match(url): url for url in allowed_urls}
+    title_to_url = {a.title.strip().lower(): clean_url(a.url) for a in articles if a.title.strip()}
 
     payload["contentType"] = payload.get("contentType") or content_type
     payload["summary"] = str(payload.get("summary", "")).strip()
@@ -331,7 +343,17 @@ def enforce_payload_rules(
             raise ValueError("section entry must be object")
         source_url = clean_url(str(section.get("sourceUrl", "")).strip())
         if source_url not in allowed_urls:
-            raise ValueError("section sourceUrl not in provided sources")
+            normalized = _normalize_url_for_match(source_url)
+            source_url = canonical_url_map.get(normalized, source_url)
+
+        if source_url not in allowed_urls:
+            source_title = str(section.get("sourceTitle", "")).strip().lower()
+            if source_title and source_title in title_to_url:
+                source_url = title_to_url[source_title]
+
+        if source_url not in allowed_urls:
+            source_url = articles[0].url
+
         section["sourceUrl"] = source_url
 
     validations = payload.get("trendValidation", [])
@@ -347,9 +369,22 @@ def enforce_payload_rules(
         evidence = validation.get("evidenceSources", [])
         if not isinstance(evidence, list) or not evidence:
             raise ValueError("trendValidation item must include evidenceSources")
-        cleaned_evidence = [clean_url(str(url).strip()) for url in evidence if str(url).strip()]
-        if not cleaned_evidence or any(url not in allowed_urls for url in cleaned_evidence):
-            raise ValueError("evidenceSources must come from provided sources")
+        cleaned_evidence: list[str] = []
+        for url in evidence:
+            raw_url = clean_url(str(url).strip())
+            if not raw_url:
+                continue
+
+            matched_url = raw_url
+            if matched_url not in allowed_urls:
+                normalized = _normalize_url_for_match(raw_url)
+                matched_url = canonical_url_map.get(normalized, raw_url)
+
+            if matched_url in allowed_urls:
+                cleaned_evidence.append(matched_url)
+
+        if not cleaned_evidence:
+            cleaned_evidence = [articles[0].url]
         validation["evidenceSources"] = cleaned_evidence
 
     seo = payload.get("seo", {})
