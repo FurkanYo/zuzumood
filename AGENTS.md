@@ -8,6 +8,7 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
 - Ürün kaynağı: **tek kaynak** `products/EtsyListingsDownload.csv`.
 - Ürün datası runtime'da `services/data.ts` içinde CSV parse edilerek üretiliyor.
 - AI chat: `components/AIStylist.tsx` içinde Gemini (`@google/genai`) ile çalışıyor.
+- Günlük blog otomasyonu: GitHub Actions + Python script ile `public/blog` altına içerik üretir.
 
 ## Kritik Mimari Kararlar
 1. **Tek kaynak CSV**
@@ -25,6 +26,11 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
    - Production için yeni build/deploy gerekir.
 5. **Kategori çıkarımı**
    - Kategoriler başlık ve etiketlerdeki anahtar kelimelerden türetilir (`services/data.ts`).
+6. **Günlük blog mimarisi**
+   - Haber kaynağı: Google News RSS (`hl=en-US&gl=US&ceid=US:en`) fashion odaklı sorgular.
+   - İçerik üretimi: Gemini metin modeli JSON payload döndürür.
+   - Görsel üretimi: Gemini image modeli ile kapak görseli üretilir, başarısız olursa default SVG kullanılır.
+   - Workflow yalnız `public/blog` klasörünü commit eder.
 
 ## Dosya Yapısı (Önemli)
 - `services/data.ts`: CSV parser + ürün oluşturma + kategori çıkarımı.
@@ -34,6 +40,9 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
 - `public/sitemap.xml`, `public/robots.txt`: SEO tarama yapılandırması.
 - `vite.config.ts`: env yükleme + anahtar inject + alias.
 - `vite-env.d.ts`: Vite `import.meta.env` ve global define tipleri.
+- `.github/workflows/daily-fashion-blog.yml`: günlük blog otomasyonu.
+- `scripts/gemini_daily_fashion_blog.py`: haber çekme + blog üretme + görsel üretme.
+- `public/blog/`: üretilen markdown, index ve görseller.
 
 ## AI Stylist Davranışı (Güncel)
 - Prompt artık **daha kısa, pratik, kullanıcı diline uyumlu** cevap üretmeye odaklıdır.
@@ -47,6 +56,7 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
 - `public/sitemap.xml` en az `/` ve `/#/shop` içerir.
 - Yeni route eklendiğinde `sitemap.xml` ve gerekirse `robots.txt` güncellenmelidir.
 - HashRouter kullanıldığı için canonical ve sosyal paylaşım meta stratejisi ayrıca değerlendirilmelidir.
+- Blog otomasyonu şu an `public/blog/*.md` üretir; bu dosyalar route değil statik çıktı olduğu için sitemap’a otomatik eklenmez.
 
 ## Chatbot Troubleshooting
 1. Tarayıcı console’da `An API Key must be set when running in a browser` görürsen:
@@ -62,11 +72,23 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
    - `components/AIStylist.tsx` içindeki `systemInstruction` kurallarını kontrol et.
    - JSON schema + kısa cevap limiti + dil uyumu maddeleri korunmalı.
 
+## Blog Otomasyonu Troubleshooting
+1. Workflow başarısız ve `GEMINI_KEY` yok hatası alıyorsan:
+   - Repo secrets altında `GEMINI_KEY` tanımlı olmalı.
+2. RSS haber gelmiyorsa:
+   - Google News query parametreleri (`hl=en-US&gl=US`) korunmalı.
+3. Görsel üretimi başarısızsa:
+   - Script default olarak `public/blog/images/default-fashion.svg` kullanır; pipeline durmaz.
+4. Blog JSON parse hatası olursa:
+   - Gemini promptundaki strict JSON şeması bozulmuş olabilir; promptu sadeleştir.
+
 ## Geliştirme Komutları
 - `npm install`
 - `npm run dev`
 - `npm run build`
 - `npm run preview`
+- `pip install -r requirements.txt`
+- `GEMINI_KEY=... python scripts/gemini_daily_fashion_blog.py`
 
 ## Değişiklik Yaparken Kontrol Listesi
 1. Ürün datası yalnızca CSV'den geliyor mu?
@@ -76,19 +98,23 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
 5. Node modules içinde değişiklik yapılmadı mı?
 6. AI ile ilgili değişiklikte env isimleri dokümante edildi mi?
 7. Chatbot mesaj tonu gerçek kullanıcı sorularında kısa ve net mi?
+8. Blog otomasyonunda secret adı `GEMINI_KEY` ile uyumlu mu?
+9. Workflow sadece gerekli klasörleri mi commit ediyor?
 
 ## Bilinen Kısıt
 - Etsy export dosyasında doğrudan listing URL yoksa ürün linki Etsy shop search query ile üretilir.
+- Blog içeriği Markdown üretir; şu anda uygulama içinde blog route/render ekranı yoktur.
 
 ## Son Görev Özeti (2026-02-11)
-- Kullanıcı şikâyeti: chatbot çok uzun ve “saçma/marka metni” gibi cevaplar üretiyordu.
+- Kullanıcı talebi: Gemini ile ABD moda trend haberlerinden günlük blog otomasyonu ve görsel üretimi.
 - Yapılanlar:
-  - `components/AIStylist.tsx` prompt yeniden yazıldı (kısa, net, kullanıcı dilinde).
-  - Satın alma soruları için Etsy URL zorunluluğu eklendi.
-  - Öneri ürün ID limiti 4 yapıldı.
-  - Boş `message` için güvenli fallback metni eklendi.
+  - `.github/workflows/daily-fashion-blog.yml` eklendi.
+  - `scripts/gemini_daily_fashion_blog.py` eklendi (RSS toplama, trend seçimi, Türkçe blog üretimi, görsel üretimi, index güncelleme).
+  - `requirements.txt` eklendi (`feedparser`, `google-genai`, `requests`).
+  - `public/blog/images/default-fashion.svg` fallback görseli eklendi.
+  - `README.md` günlük blog otomasyonu bilgileriyle güncellendi.
 - SEO/Sitemap kontrolü:
-  - Yeni route eklenmedi, bu yüzden `public/sitemap.xml` değişmedi.
+  - Yeni uygulama route’u eklenmedi; bu nedenle `public/sitemap.xml` değişmedi.
 
 ## Teslim Standartları
 - Kod değişikliği sonrası build çalıştır.
