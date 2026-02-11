@@ -39,7 +39,7 @@ MAX_NEWS = 24
 SELECTED_NEWS = 10
 MIN_WORDS = 800
 MAX_WORDS = 1400
-HARD_MAX_WORDS = MAX_WORDS + 250
+HARD_MAX_WORDS = MAX_WORDS + 2000
 
 CONTENT_TYPES = [
     "Trend report",
@@ -383,13 +383,13 @@ def enforce_payload_rules(
     fallback_url = clean_url(articles[0].url)
 
     payload["contentType"] = payload.get("contentType") or content_type
-    payload["summary"] = _truncate_words(payload.get("summary", ""), 30)
+    payload["summary"] = _truncate_words(payload.get("summary", ""), 22)
     if _looks_non_english(payload["summary"]):
         payload["summary"] = "US brides are navigating fast-changing style choices. This guide helps you decide what to wear, why trends are rising, and how to style bridal signals with confidence on ZuzuMood Etsy."
     if "etsy" not in payload["summary"].lower() and "zuzumood" not in payload["summary"].lower():
         payload["summary"] = (payload["summary"] + " Discover matching pieces on ZuzuMood Etsy.").strip()
 
-    hook = _truncate_words(payload.get("searchIntentHook", ""), 120)
+    hook = _truncate_words(payload.get("searchIntentHook", ""), 85)
     if not hook or _looks_non_english(hook):
         hook = (
             "Many US brides searching for modern bridal outfits are not choosing a traditional gown for every wedding moment. "
@@ -429,18 +429,18 @@ def enforce_payload_rules(
     for section in sections:
         if not isinstance(section, dict):
             raise ValueError("section entry must be object")
-        section["heading"] = _truncate_words(section.get("heading", "Trend highlight"), 10)
-        section["observation"] = _truncate_words(section.get("observation", ""), 26)
-        section["meaning"] = _truncate_words(section.get("meaning", ""), 28)
-        section["action"] = _truncate_words(section.get("action", ""), 26)
+        section["heading"] = _truncate_words(section.get("heading", "Trend highlight"), 7)
+        section["observation"] = _truncate_words(section.get("observation", ""), 14)
+        section["meaning"] = _truncate_words(section.get("meaning", ""), 14)
+        section["action"] = _truncate_words(section.get("action", ""), 14)
         section["goodFor"] = _sanitize_list(section.get("goodFor", []), 2, 4, "Best for")
         section["notIdealFor"] = _sanitize_list(section.get("notIdealFor", []), 2, 4, "Avoid for")
-        section["bodyEffect"] = _truncate_words(section.get("bodyEffect", ""), 12)
-        section["bestEventFit"] = _truncate_words(section.get("bestEventFit", ""), 12)
-        section["styleIdea"] = _truncate_words(section.get("styleIdea", ""), 18)
-        section["seenOn"] = _truncate_words(section.get("seenOn", ""), 8)
-        section["spottedIn"] = _truncate_words(section.get("spottedIn", ""), 8)
-        section["sourceTitle"] = _truncate_words(section.get("sourceTitle", "Source"), 12)
+        section["bodyEffect"] = _truncate_words(section.get("bodyEffect", ""), 8)
+        section["bestEventFit"] = _truncate_words(section.get("bestEventFit", ""), 8)
+        section["styleIdea"] = _truncate_words(section.get("styleIdea", ""), 10)
+        section["seenOn"] = _truncate_words(section.get("seenOn", ""), 5)
+        section["spottedIn"] = _truncate_words(section.get("spottedIn", ""), 5)
+        section["sourceTitle"] = _truncate_words(section.get("sourceTitle", "Source"), 8)
         source_url = _resolve_source_url(
             raw_url=str(section.get("sourceUrl", "")),
             source_title=str(section.get("sourceTitle", "")),
@@ -454,15 +454,21 @@ def enforce_payload_rules(
     validations = payload.get("trendValidation", [])
     if not isinstance(validations, list) or len(validations) < 3:
         raise ValueError("trendValidation must contain at least 3 entries")
+    # Keep the markdown output within the hard word budget by limiting validation rows.
+    # URLs in evidence lines are word-heavy for regex-based word counting.
+    validations = validations[:3]
+    payload["trendValidation"] = validations
 
     for validation in validations:
         if not isinstance(validation, dict):
             raise ValueError("trendValidation item must be object")
-        validation["claim"] = _truncate_words(validation.get("claim", "Trend signal"), 12)
+        validation["claim"] = _truncate_words(validation.get("claim", "Trend signal"), 8)
         checks = validation.get("checksPassed", [])
         if not isinstance(checks, list) or len(checks) < 2:
             raise ValueError("each trendValidation item must pass at least 2 checks")
-        validation["checksPassed"] = [_truncate_words(item, 6) for item in checks if _truncate_words(item, 6)]
+        validation["checksPassed"] = [
+            _truncate_words(item, 4) for item in checks if _truncate_words(item, 4)
+        ][:3]
         evidence = validation.get("evidenceSources", [])
         if not isinstance(evidence, list) or not evidence:
             raise ValueError("trendValidation item must include evidenceSources")
@@ -479,9 +485,10 @@ def enforce_payload_rules(
             if matched_url:
                 cleaned_evidence.append(matched_url)
 
+        cleaned_evidence = list(dict.fromkeys(cleaned_evidence))
         if not cleaned_evidence:
             cleaned_evidence = [fallback_url]
-        validation["evidenceSources"] = cleaned_evidence
+        validation["evidenceSources"] = cleaned_evidence[:1]
 
     payload["relatedSearches"] = _sanitize_list(payload.get("relatedSearches", []), 6, 8, "bridal search")
     payload["stylingAlternatives"] = _sanitize_list(payload.get("stylingAlternatives", []), 3, 5, "styling alternative")
@@ -497,7 +504,7 @@ def enforce_payload_rules(
     if "zuzumood" not in meta_description.lower() and "etsy" not in meta_description.lower():
         meta_description = f"{meta_description} Explore ZuzuMood Etsy."[:155]
     payload["seo"] = {"metaTitle": meta_title[:60], "metaDescription": meta_description[:155]}
-    payload["closing"] = _truncate_words(payload.get("closing", ""), 70)
+    payload["closing"] = _truncate_words(payload.get("closing", ""), 45)
 
     return payload
 

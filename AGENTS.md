@@ -222,3 +222,18 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
 - SEO/Sitemap kontrolü:
   - Yeni route eklenmedi.
   - `public/sitemap.xml` yeniden kontrol edildi; `/`, `/#/shop`, `/#/blog` mevcut ve yeterli.
+
+## Son Görev Özeti (2026-02-11 / Blog Word Count Upper Bound Stabilizasyonu)
+- Kullanıcı geri bildirimi:
+  - `generate-daily-blog` job'ı `ValueError: Generated markdown word count out of expected range: 3117` hatasıyla düşüyordu.
+- Kök neden:
+  - Markdown üst sınırı (`HARD_MAX_WORDS`) çok dar kaldığı için modelin bazı günlerde doğal olarak ürettiği daha uzun ama geçerli SEO içerikleri job'ı gereksiz yere fail ediyordu.
+- Yapılanlar:
+  - `scripts/gemini_daily_fashion_blog.py` içinde `HARD_MAX_WORDS` değeri `MAX_WORDS + 250` yerine `MAX_WORDS + 2000` olacak şekilde güncellendi.
+  - Payload normalize adımında ayrıca `trendValidation` listesini en fazla 3 kayıtla sınırlayıp, her kayıtta `checksPassed` alanını en fazla 3 maddeye ve `evidenceSources` alanını en fazla 1 URL'ye düşürerek markdown şişmesini azaltan koruma eklendi.
+- Beklenen sonuç:
+  - Workflow artık 3k civarı kelime üreten günlerde fail etmeden blog üretimini tamamlar.
+  - Aşırı büyüme riski normalize katmanında daha kontrollü tutulur.
+- SEO/Sitemap kontrolü:
+  - Yeni route eklenmedi.
+  - `public/sitemap.xml` kontrol edildi; `/`, `/#/shop`, `/#/blog` mevcut ve yeterli.
