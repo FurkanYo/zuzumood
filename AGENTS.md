@@ -315,3 +315,28 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
 - SEO/Sitemap kontrolü:
   - Yeni route eklenmedi.
   - `public/sitemap.xml` tekrar kontrol edildi; `/admin` bilinçli olarak gizli tutulduğu için sitemap'e eklenmedi.
+
+## Son Görev Özeti (2026-02-11 / Admin Türkçe Çıktı Zorunluluğu + Liste Sıralama Stabilizasyonu)
+- Kullanıcı geri bildirimi:
+  - Admin trend botu çalışsa da yeni üretilen metinler İngilizce geliyordu; ekip dili için çıktının Türkçe olması istendi.
+  - AI araştırması İngilizce/US kaynaklardan yapılmalı, fakat admin çıktısı Türkçe olmalı talebi netleştirildi.
+  - Yeni raporlar eklendiğinde eski kayıtlar silinmemeli; listede en yeni kayıt üstte olacak şekilde tarih sıralaması korunmalı.
+  - Aynı sıralama davranışı blog listesi için de istendi (en yeni üstte, aşağı doğru tarihsel akış).
+- Yapılanlar:
+  - `scripts/gemini_admin_trend_report.py` promptu güncellendi:
+    - araştırma kaynağı US/İngilizce sinyaller olarak korundu,
+    - JSON içindeki tüm anlatı alanlarının Türkçe üretilmesi zorunlu hale getirildi.
+  - Aynı scriptte fallback/guard metinleri tamamen Türkçe içerik akışına göre güncellendi.
+  - Admin markdown üretim şablonu Türkçe başlıklarla standardize edildi (`Pazar Nabzı`, `Bu Haftanın Odağı`, vb.) ve frontmatter locale değeri `tr-TR` yapıldı.
+  - `scripts/gemini_admin_trend_report.py` içinde index güncelleme adımı güçlendirildi:
+    - mevcut kayıtlar korunuyor,
+    - slug tekilleştirmesi sonrası tüm liste `date` alanına göre azalan sıralanıyor,
+    - en yeni kayıtlar üstte kalacak şekilde ilk 30 kayıt yazılıyor.
+  - `scripts/gemini_daily_fashion_blog.py` içinde blog index güncellemesi de aynı şekilde tarih bazlı azalan sıralama ile stabilize edildi.
+  - `pages/Admin.tsx` ve `pages/Blog.tsx` tarafında runtime index yükleme sonrası istemci tarafı ek tarih sıralaması eklendi; olası eski/sırasız JSON senaryolarına karşı UI katmanında da en yeni kayıt üstte garanti edildi.
+- Beklenen sonuç:
+  - Admin botu US sinyallerini kullanmaya devam eder ancak ekip ekranında günlük içerik Türkçe görünür.
+  - Hem admin hem blog tarafında yeni içerikler geçmiş kayıtları silmeden birikir ve listeler kronolojik olarak doğru sırada kalır.
+- SEO/Sitemap kontrolü:
+  - Yeni route eklenmedi.
+  - `public/sitemap.xml` tekrar kontrol edildi; mevcut route seti yeterli, ek güncelleme gerekmedi.
