@@ -93,6 +93,26 @@ const toBlocks = (markdown: string): MarkdownBlock[] => {
   return blocks;
 };
 
+
+
+const localizeAdminMarkdownForTr = (markdown: string): string => {
+  if (!markdown) {
+    return markdown;
+  }
+
+  return markdown
+    .replaceAll('## Market Pulse', '## Pazar Nabzı')
+    .replaceAll("## This Week's Focus", '## Bu Haftanın Odağı')
+    .replaceAll('## Trend Horizons (Now + 15/20/30 Days)', '## Trend Ufukları (Şimdi + 15/20/30 Gün)')
+    .replaceAll('## Competitor and Platform Watch', '## Rakip ve Platform Takibi')
+    .replaceAll('## Action Checklist', '## Aksiyon Kontrol Listesi')
+    .replaceAll('**Why now:**', '**Neden şimdi:**')
+    .replaceAll('**Etsy opportunity:**', '**Etsy fırsatı:**')
+    .replaceAll('**Design directions:**', '**Tasarım yönleri:**')
+    .replaceAll('**Example sources:**', '**Örnek kaynaklar:**')
+    .replaceAll('This report is intended for internal team use only.', 'Bu rapor yalnızca şirket içi ekip kullanımı içindir.');
+};
+
 const renderInline = (text: string): React.ReactNode[] => {
   const parts: React.ReactNode[] = [];
   const boldSplit = text.split(/(\*\*[^*]+\*\*)/g).filter(Boolean);
@@ -154,7 +174,7 @@ export const Admin: React.FC = () => {
   const selectedSlug = searchParams.get('post');
 
   useEffect(() => {
-    document.title = 'ZuzuMood Admin Trend Desk (US/Texas)';
+    document.title = 'ZuzuMood Admin Trend Masası (US/Texas)';
 
     const previousRobots = document.querySelector('meta[name="robots"]');
     const previousContent = previousRobots?.getAttribute('content') ?? null;
@@ -190,14 +210,14 @@ export const Admin: React.FC = () => {
       try {
         const response = await fetch(toAssetUrl('/admin/index.json'), { cache: 'no-store' });
         if (!response.ok) {
-          throw new Error(`Admin index could not be loaded (${response.status})`);
+          throw new Error(`Admin dizini yüklenemedi (${response.status})`);
         }
 
         const data = (await response.json()) as AdminPostMeta[];
         setPosts(Array.isArray(data) ? data : []);
       } catch (error) {
         setPosts([]);
-        setIndexError(error instanceof Error ? error.message : 'Admin index could not be loaded.');
+        setIndexError(error instanceof Error ? error.message : 'Admin dizini yüklenemedi.');
       } finally {
         setIsLoadingPosts(false);
       }
@@ -234,14 +254,14 @@ export const Admin: React.FC = () => {
       try {
         const response = await fetch(toAssetUrl(selectedPost.path), { cache: 'no-store' });
         if (!response.ok) {
-          throw new Error(`Admin report could not be loaded (${response.status})`);
+          throw new Error(`Admin raporu yüklenemedi (${response.status})`);
         }
 
         const markdown = await response.text();
         setSelectedMarkdown(markdown);
       } catch (error) {
         setSelectedMarkdown('');
-        setPostError(error instanceof Error ? error.message : 'Admin report could not be loaded.');
+        setPostError(error instanceof Error ? error.message : 'Admin raporu yüklenemedi.');
       } finally {
         setIsLoadingPost(false);
       }
@@ -255,7 +275,9 @@ export const Admin: React.FC = () => {
     [posts, selectedSlug],
   );
 
-  const blocks = useMemo(() => toBlocks(selectedMarkdown), [selectedMarkdown]);
+  const localizedMarkdown = useMemo(() => localizeAdminMarkdownForTr(selectedMarkdown), [selectedMarkdown]);
+
+  const blocks = useMemo(() => toBlocks(localizedMarkdown), [localizedMarkdown]);
 
   const handleSubmitPassword = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -303,11 +325,11 @@ export const Admin: React.FC = () => {
     <div className="bg-neutral-50 pt-28 md:pt-36 pb-20 px-6">
       <div className="max-w-7xl mx-auto">
         <section className="bg-black text-white rounded-3xl p-8 md:p-14 mb-10">
-          <p className="text-[10px] uppercase tracking-[0.35em] text-white/70 mb-5">Internal Trend Desk • US Market / Etsy Demand</p>
+          <p className="text-[10px] uppercase tracking-[0.35em] text-white/70 mb-5">İç Trend Masası • ABD Pazarı / Etsy Talebi</p>
           <h1 className="text-3xl md:text-5xl font-serif mb-5">ZuzuMood Admin Trend Rehberi</h1>
           <p className="max-w-3xl text-sm md:text-base text-white/85 leading-relaxed">
-            This internal panel collects daily US fashion signals, Etsy opportunities, and 15/20/30-day trend forecasts for the Texas-based team.
-            House tasarım ekibi bu raporları kullanarak koleksiyon fikirlerini hızlıca planlayabilir.
+            Bu iç panel, Texas merkezli ekip için günlük ABD moda sinyallerini, Etsy fırsatlarını ve 15/20/30 günlük trend öngörülerini toplar.
+            Tasarım ekibi bu raporları kullanarak koleksiyon fikirlerini hızlıca planlayabilir.
           </p>
         </section>
 
@@ -315,7 +337,7 @@ export const Admin: React.FC = () => {
           <aside className="bg-white rounded-2xl border border-gray-100 p-5 md:p-6 lg:sticky lg:top-36">
             <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] mb-4 text-muted">Admin Raporları</h2>
             {isLoadingPosts ? (
-              <p className="text-sm text-muted">Rapor listesi yükleniyor...</p>
+              <p className="text-sm text-muted">Raporlar yükleniyor...</p>
             ) : indexError ? (
               <p className="text-sm text-red-600">{indexError}</p>
             ) : (
@@ -334,7 +356,7 @@ export const Admin: React.FC = () => {
                         }`}
                       >
                         <p className="text-[10px] uppercase tracking-[0.22em] mb-2 opacity-80">
-                          {new Date(post.date).toLocaleDateString('en-US', {
+                          {new Date(post.date).toLocaleDateString('tr-TR', {
                             year: 'numeric',
                             month: 'short',
                             day: 'numeric',
@@ -352,7 +374,7 @@ export const Admin: React.FC = () => {
 
           <article className="min-w-0 bg-white rounded-2xl border border-gray-100 p-6 md:p-10 overflow-hidden">
             {isLoadingPost ? (
-              <p className="text-base text-muted">Rapor yükleniyor...</p>
+              <p className="text-base text-muted">Seçilen rapor yükleniyor...</p>
             ) : postError ? (
               <p className="text-base text-red-600">{postError}</p>
             ) : (

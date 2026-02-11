@@ -185,7 +185,7 @@ JSON schema:
   "weeklyFocus": ["string", "string", "string"],
   "horizons": [
     {{
-      "window": "Bu hafta | 15 gün | 20 gün | 30 gün",
+      "window": "This week | 15 days | 20 days | 30 days",
       "trendName": "string",
       "whyNow": "string (English)",
       "etsyOpportunity": "string (English)",
@@ -224,9 +224,9 @@ def enforce_payload_rules(payload: dict[str, Any], articles: list[Article], date
     payload["weeklyFocus"] = [str(item).strip() for item in weekly_focus if str(item).strip()][:3]
     if len(payload["weeklyFocus"]) < 3:
         payload["weeklyFocus"] += [
-            "Mini kapsül koleksiyon için hızlı prototip çıkar.",
-            "Etsy başlıklarında trend + kullanım senaryosu eşleşmesini güçlendir.",
-            "Pin ve kısa video içeriklerinde aynı görsel dili koru.",
+            "Ship fast prototypes for a mini capsule collection this week.",
+            "Strengthen Etsy titles by pairing trend terms with clear use cases.",
+            "Keep one cohesive visual language across pins and short video assets.",
         ][: 3 - len(payload["weeklyFocus"])]
 
     fallback_links = [{"label": article.title, "url": article.url} for article in articles[:4]]
@@ -245,7 +245,7 @@ def enforce_payload_rules(payload: dict[str, Any], articles: list[Article], date
             if not isinstance(item, dict):
                 continue
             url = str(item.get("url") or "").strip()
-            label = str(item.get("label") or "Kaynak").strip()
+            label = str(item.get("label") or "Source").strip()
             if url.startswith("http"):
                 valid_links.append({"label": label, "url": clean_url(url)})
 
@@ -264,7 +264,7 @@ def enforce_payload_rules(payload: dict[str, Any], articles: list[Article], date
         normalized_horizons.append(
             {
                 "window": window,
-                "trendName": str(source.get("trendName") or f"US Trend Fırsatı {index + 1}").strip(),
+                "trendName": str(source.get("trendName") or f"US Trend Opportunity {index + 1}").strip(),
                 "whyNow": str(source.get("whyNow") or "Signal density is rising, so fast execution creates a conversion advantage.").strip(),
                 "etsyOpportunity": str(source.get("etsyOpportunity") or "There is strong opportunity in personalized products with high-intent niche search terms.").strip(),
                 "designDirections": design_directions,
