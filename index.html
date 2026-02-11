@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ZuzuMood | Premium Minimalist Aesthetic Apparel & Mood-Wear</title>
+    <meta name="description" content="Shop ZuzuMood Soul Archive: High-end minimalist sweatshirts, Comfort Colors 1717 tees, and personalized gifts for teachers, brides, and bold spirits. Designed for the quiet luxury aesthetic.">
+    <meta name="keywords" content="Minimalist Apparel USA, Comfort Colors 1717 Boutique, Aesthetic Oversized Hoodies, Custom Teacher Sweatshirts, Bridal Party Outfits, Dark Academia Clothing, Christian Streetwear">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#000000',
+              secondary: '#ffffff',
+              accent: '#f8f8f8',
+              muted: '#8e8e8e'
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              serif: ['Playfair Display', 'serif'],
+            },
+            animation: {
+              'fade-in': 'fadeIn 1s ease-out forwards',
+              'slide-down': 'slideDown 0.5s ease-out forwards',
+            },
+            keyframes: {
+              fadeIn: {
+                '0%': { opacity: '0', transform: 'translateY(10px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+              slideDown: {
+                '0%': { transform: 'translateY(-100%)' },
+                '100%': { transform: 'translateY(0)' },
+              }
+            }
+          },
+        },
+      }
+    </script>
+    <style>
+      body {
+        cursor: default;
+        scroll-behavior: smooth;
+      }
+      ::-webkit-scrollbar {
+        width: 3px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #fff;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #000;
+      }
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.13.0",
+    "@google/genai": "https://esm.sh/@google/genai@^1.40.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-white text-black">
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

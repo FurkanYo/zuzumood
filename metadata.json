@@ -1,0 +1,7 @@
+{
+  "name": "ZuzuMood",
+  "description": "High-end minimalist aesthetic apparel and mood-wear store",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
