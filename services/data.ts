@@ -1,150 +1,184 @@
 import { Product, Category } from '../types';
+import etsyListingsCsv from '../products/EtsyListingsDownload.csv?raw';
 
-export const CATEGORIES: Category[] = [
-  { id: 'valentines', name: 'Valentines', description: 'Gifts for bold spirits and soulmate connections. Handcrafted for the modern romantic.' },
-  { id: 'aesthetic', name: 'Aesthetic Archive', description: 'Quiet luxury and minimalist silhouettes using premium Comfort Colors and Gildan fabrics.' },
-  { id: 'healing', name: 'Healing & Stoic', description: 'Wearable reminders to pause, reflect, and reconnect with your inner strength.' },
-  { id: 'music', name: 'Rock & Vinyl', description: 'Inspired by the rhythms of the 70s and the soul of analog sound.' },
-  { id: 'teacher', name: 'Teacher Edit', description: 'Academic sophistication for the modern educator. Personalized and premium.' },
-  { id: 'patriotic', name: 'Liberty & Truth', description: 'Statement pieces for those who believe in freedom, transparency, and independence.' },
-  { id: 'bridal', name: 'Bridal Atelier', description: 'Celebratory pieces for your wedding morning, bachelorette, and honeymoon era.' },
-  { id: 'family', name: 'Legacy & Kin', description: 'Celebrating the miracle of new beginnings and the strength of family bonds.' },
-];
-
-const getEtsyLink = (title: string) => `https://www.etsy.com/shop/ZuzuMood?search_query=${encodeURIComponent(title)}`;
-
-export const PRODUCTS: Product[] = [
-  // FEATURED & NEW (Non-CSV rounded out items)
-  {
-    id: 'zm-000',
-    title: 'Signature Maison Oversized Blank',
-    price: 32.00,
-    category: 'aesthetic',
-    image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=1000',
-    description: 'The foundation of the Soul Archive. A premium, heavyweight 100% cotton blank for those who speak in silence.',
-    details: ['100% Ring-Spun Cotton', 'Double-needle stitching', 'Pre-shrunk', 'Minimalist fit'],
-    isNew: true,
-    etsyUrl: 'https://www.etsy.com/shop/ZuzuMood'
+const CATEGORY_DEFINITIONS: Record<Product['category'], Omit<Category, 'id'>> = {
+  valentines: {
+    name: 'Valentines',
+    description: 'Gifts for bold spirits and soulmate connections. Handcrafted for the modern romantic.'
   },
-  // CSV ITEMS REFINED FOR SEO
-  {
-    id: 'zm-172',
-    title: 'Faith-Filled Minimalist Christian Bridal Sweatshirt',
-    price: 30.00,
-    category: 'bridal',
-    image: 'https://i.etsystatic.com/63666514/r/il/dc4aeb/7745338633/il_fullxfull.7745338633_c953.jpg',
-    description: 'Timeless Christian bridal sweatshirt for wedding mornings and bridal showers. Minimal script with a delicate veil detail.',
-    details: ['Gildan 18000 Heavyweight', 'Unisex Relaxed Fit', 'Bridal Keepsake', 'Designed in the USA inspired aesthetic'],
-    etsyUrl: getEtsyLink('Faith Filled Bride Sweatshirt')
+  aesthetic: {
+    name: 'Aesthetic Archive',
+    description: 'Quiet luxury and minimalist silhouettes using premium Comfort Colors and Gildan fabrics.'
   },
-  {
-    id: 'zm-171',
-    title: 'Faith Over Fear Minimalist Christian Hoodie',
-    price: 39.99,
-    category: 'healing',
-    image: 'https://i.etsystatic.com/63666514/r/il/b54a7a/7744562467/il_fullxfull.7744562467_s4db.jpg',
-    description: 'A daily reminder of spiritual strength. "Faith Over Fear" in a clean, modern layout for daily confidence.',
-    details: ['Premium Fleece Lined', 'Unisex Comfort Fit', 'High-Definition DTG Print', 'Minimalist Religious Quote'],
-    etsyUrl: getEtsyLink('Faith Over Fear Hoodie')
+  healing: {
+    name: 'Healing & Stoic',
+    description: 'Wearable reminders to pause, reflect, and reconnect with your inner strength.'
   },
-  {
-    id: 'zm-169',
-    title: 'Comfort Colors 1717 Personalized Professor Sweatshirt',
-    price: 19.99,
-    category: 'teacher',
-    image: 'https://i.etsystatic.com/63666514/r/il/7263af/7689926358/il_fullxfull.7689926358_jzt4.jpg',
-    description: 'Academic sophistication using the legendary Comfort Colors 1717 garment-dyed fabric. Personalized for the modern educator.',
-    details: ['100% Ring-Spun Cotton', 'Garment-Dyed Vintage Look', 'Sanchez Font Typography', 'Personalized Teacher Gift'],
-    etsyUrl: getEtsyLink('Personalized Teacher Sweatshirt')
+  music: {
+    name: 'Rock & Vinyl',
+    description: 'Inspired by the rhythms of the 70s and the soul of analog sound.'
   },
-  {
-    id: 'zm-168',
-    title: 'Custom Minimalist Apple Teacher Appreciation Sweatshirt',
-    price: 30.00,
-    category: 'teacher',
-    image: 'https://i.etsystatic.com/63666514/r/il/a50d61/7689485596/il_fullxfull.7689485596_870q.jpg',
-    description: 'Celebrate your favorite educator with our minimalist apple design. Features a custom name integrated with modern elegance.',
-    details: ['Gildan 18000 Series', 'Teacher Appreciation Gift', 'School Year Essential', 'Premium Soft Texture'],
-    etsyUrl: getEtsyLink('Custom Teacher Shirt')
+  teacher: {
+    name: 'Teacher Edit',
+    description: 'Academic sophistication for the modern educator. Personalized and premium.'
   },
-  {
-    id: 'zm-167',
-    title: 'Vintage 1976 Birthday Milestone Comfort Colors Tee',
-    price: 19.99,
-    category: 'aesthetic',
-    image: 'https://i.etsystatic.com/63666514/r/il/80f003/7731595355/il_fullxfull.7731595355_osij.jpg',
-    description: 'Capture the legend of 1976. Authentic retro vibe with a professionally distressed, sun-faded graphic.',
-    details: ['Garment-Dyed Fabric', '70s Palette Inspired', 'Relaxed Unisex Fit', 'Vintage Milestone Quality'],
-    etsyUrl: getEtsyLink('Vintage 1976 Birthday Shirt')
+  patriotic: {
+    name: 'Liberty & Truth',
+    description: 'Statement pieces for those who believe in freedom, transparency, and independence.'
   },
-  {
-    id: 'zm-166',
-    title: 'Jesus John 14:6 Leopard Print Christian Sweatshirt',
-    price: 30.00,
-    category: 'healing',
-    image: 'https://i.etsystatic.com/63666514/r/il/632ecb/7730597615/il_fullxfull.7730597615_qfd9.jpg',
-    description: 'Wear your faith with a modern touch. Trendy cheetah print varsity letters featuring the powerful John 14:6 message.',
-    details: ['Soft Cotton/Poly Blend', 'Scripture Based Art', 'Trendy Animal Print', 'Aesthetic Faith Wear'],
-    etsyUrl: getEtsyLink('Christian Sweatshirt John 14:6')
+  bridal: {
+    name: 'Bridal Atelier',
+    description: 'Celebratory pieces for your wedding morning, bachelorette, and honeymoon era.'
   },
-  {
-    id: 'zm-165',
-    title: 'Political Humor Statement Sweatshirt - He Is On The List',
-    price: 30.00,
-    category: 'patriotic',
-    image: 'https://i.etsystatic.com/63666514/r/il/71c10f/7728507089/il_fullxfull.7728507089_loaz.jpg',
-    description: 'A provocative conversation starter. Minimalist typography with hidden landscape art for those who stay informed.',
-    details: ['High-Definition Print', 'Sarcastic Political Art', 'Heavyweight Comfort', 'Limited Edition Satire'],
-    etsyUrl: getEtsyLink('Political Humor Shirt')
-  },
-  {
-    id: 'zm-160',
-    title: 'Abolish ICE Human Rights Activist Hoodie',
-    price: 30.00,
-    category: 'patriotic',
-    image: 'https://i.etsystatic.com/63666514/r/il/fadea1/7675545522/il_fullxfull.7675545522_be4f.jpg',
-    description: 'Stand for justice. Hand-drawn illustration capturing the fragility of safety and the cry for humanitarian empathy.',
-    details: ['Activist Design', 'Political Social Justice', 'Durable Print Quality', 'Meaningful Gift for Change'],
-    etsyUrl: getEtsyLink('Seals Against ICE')
-  },
-  {
-    id: 'zm-158',
-    title: 'Dark Academia Book Lover Librarian Sweatshirt',
-    price: 30.00,
-    category: 'aesthetic',
-    image: 'https://i.etsystatic.com/63666514/r/il/fbdce0/7675040048/il_fullxfull.7675040048_2pwr.jpg',
-    description: 'Designed for the bibliophile soul. Minimalist aesthetic for teachers, students, and librarians who live in chapters.',
-    details: ['Medium-Heavy Fabric', 'Bookish Quote Style', 'Intellectual Aesthetic', 'Cozy Reading Jumper'],
-    etsyUrl: getEtsyLink('Book Lover Sweatshirt')
-  },
-  {
-    id: 'zm-111',
-    title: 'Capybara Ballerina Quirky Aesthetic Comfort Colors Tee',
-    price: 19.99,
-    category: 'aesthetic',
-    image: 'https://i.etsystatic.com/63666514/r/il/d2ef39/7667623415/il_fullxfull.7667623415_gd86.jpg',
-    description: 'Chill meets elegance. A whimsical capybara on tiptoes in ballet shoes. Quirky humor for animal lovers.',
-    details: ['100% Ring-Spun Cotton', 'Quirky Animal Humor', 'Balletcore Aesthetic', 'Vintage Lived-in Feel'],
-    etsyUrl: getEtsyLink('Capybara Ballerina')
-  },
-  {
-    id: 'zm-92',
-    title: 'A Lot Going On At The Moment Red Glitter Concert Tee',
-    price: 19.99,
-    category: 'music',
-    image: 'https://i.etsystatic.com/63666514/r/il/1f94c8/7656337273/il_fullxfull.7656337273_5sa6.jpg',
-    description: 'Shine in Comfort Colors. Featuring a custom red glitter star inside the "A". The ultimate concert essential.',
-    details: ['Premium Textured Glitter', 'Swiftie Fan Inspired', 'Heavyweight Relaxed Fit', 'Double-Needle Stitching'],
-    etsyUrl: getEtsyLink('A Lot Going On At The Moment Glitter Tee')
-  },
-  {
-    id: 'zm-86',
-    title: 'Cherry Blossom Family Bond Minimalist Line Art Hoodie',
-    price: 45.00,
-    category: 'family',
-    image: 'https://i.etsystatic.com/63666514/r/il/2a4d76/7597347452/il_fullxfull.7597347452_6e7r.jpg',
-    description: 'Poetic grace for the modern family. Delicate line art fused with blooming cherry blossoms capturing togetherness.',
-    details: ['Quiet Luxury Style', 'Family Legacy Art', 'Premium Soft-Touch', 'Floral Motherhood Gift'],
-    etsyUrl: getEtsyLink('Embroidered Mother Child Hoodie')
+  family: {
+    name: 'Legacy & Kin',
+    description: 'Celebrating the miracle of new beginnings and the strength of family bonds.'
   }
+};
+
+const CATEGORY_RULES: Array<{ category: Product['category']; keywords: string[] }> = [
+  { category: 'bridal', keywords: ['bride', 'bridal', 'wedding', 'bachelorette', 'honeymoon', 'mrs'] },
+  { category: 'teacher', keywords: ['teacher', 'professor', 'school', 'educator', 'back_to_school', 'faculty'] },
+  { category: 'healing', keywords: ['faith', 'christian', 'bible', 'healing', 'jesus', 'prayer', 'stoic'] },
+  { category: 'music', keywords: ['vinyl', 'rock', 'band', 'music', 'album', 'cassette'] },
+  { category: 'patriotic', keywords: ['america', 'usa', 'patriot', 'freedom', 'politic', 'liberty', 'ice'] },
+  { category: 'family', keywords: ['mom', 'mama', 'dad', 'family', 'baby', 'pregnancy', 'couple', 'anniversary'] },
+  { category: 'valentines', keywords: ['valentine', 'lover', 'romantic', 'soulmate', 'heart'] }
 ];
+
+const parseCsv = (csv: string): string[][] => {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let value = '';
+  let isInQuotes = false;
+
+  const flushValue = () => {
+    row.push(value);
+    value = '';
+  };
+
+  const flushRow = () => {
+    rows.push(row);
+    row = [];
+  };
+
+  for (let i = 0; i < csv.length; i += 1) {
+    const char = csv[i];
+    const nextChar = csv[i + 1];
+
+    if (char === '"') {
+      if (isInQuotes && nextChar === '"') {
+        value += '"';
+        i += 1;
+      } else {
+        isInQuotes = !isInQuotes;
+      }
+      continue;
+    }
+
+    if (!isInQuotes && char === ',') {
+      flushValue();
+      continue;
+    }
+
+    if (!isInQuotes && (char === '\n' || char === '\r')) {
+      if (char === '\r' && nextChar === '\n') {
+        i += 1;
+      }
+      flushValue();
+      flushRow();
+      continue;
+    }
+
+    value += char;
+  }
+
+  if (value.length > 0 || row.length > 0) {
+    flushValue();
+    flushRow();
+  }
+
+  return rows.filter((csvRow) => csvRow.some((cell) => cell.trim().length > 0));
+};
+
+const normalizeForSearch = (value: string) => value.toLowerCase().replace(/\s+/g, ' ').trim();
+
+const toSlug = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80);
+
+const getCategory = (title: string, tags: string): Product['category'] => {
+  const haystack = `${normalizeForSearch(title)} ${normalizeForSearch(tags)}`;
+
+  const match = CATEGORY_RULES.find((rule) =>
+    rule.keywords.some((keyword) => haystack.includes(keyword.toLowerCase()))
+  );
+
+  return match?.category ?? 'aesthetic';
+};
+
+const getEtsyLink = (title: string) =>
+  `https://www.etsy.com/shop/ZuzuMood?search_query=${encodeURIComponent(title)}`;
+
+const csvRows = parseCsv(etsyListingsCsv);
+const header = csvRows[0] ?? [];
+const dataRows = csvRows.slice(1);
+
+const indexOf = (columnName: string) => header.indexOf(columnName);
+
+const getCell = (cells: string[], columnName: string) => {
+  const columnIndex = indexOf(columnName);
+  return columnIndex >= 0 ? (cells[columnIndex] ?? '').trim() : '';
+};
+
+export const PRODUCTS: Product[] = dataRows
+  .map((cells, rowIndex) => {
+    const title = getCell(cells, 'TITLE');
+    const description = getCell(cells, 'DESCRIPTION');
+    const price = Number.parseFloat(getCell(cells, 'PRICE'));
+    const image = getCell(cells, 'IMAGE1');
+    const sku = getCell(cells, 'SKU');
+    const tags = getCell(cells, 'TAGS');
+    const materials = getCell(cells, 'MATERIALS');
+
+    if (!title || !image || Number.isNaN(price)) {
+      return null;
+    }
+
+    const details = [
+      ...materials
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean),
+      ...tags
+        .split(',')
+        .map((item) => item.replace(/_/g, ' ').trim())
+        .filter(Boolean)
+        .slice(0, 4)
+    ];
+
+    const idBase = sku.toLowerCase().replace(/[^a-z0-9]+/g, '-') || toSlug(title) || `product-${rowIndex + 1}`;
+
+    return {
+      id: idBase,
+      title,
+      price,
+      category: getCategory(title, tags),
+      image,
+      description,
+      details: details.length > 0 ? details : ['Etsy exclusive design'],
+      isNew: rowIndex < 8,
+      etsyUrl: getEtsyLink(title)
+    } as Product;
+  })
+  .filter((product): product is Product => Boolean(product));
+
+export const CATEGORIES: Category[] = Object.entries(CATEGORY_DEFINITIONS)
+  .map(([id, config]) => ({
+    id,
+    ...config
+  }))
+  .filter((category) => PRODUCTS.some((product) => product.category === category.id));
