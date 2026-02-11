@@ -2,7 +2,7 @@ name: Daily Admin Trend Report (Gemini)
 
 on:
   schedule:
-    - cron: "30 16 * * *" # 10:30 America/Chicago
+    - cron: "0 21 * * *" # 00:00 Turkey time (UTC+3), previous UTC day 21:00
   workflow_dispatch: {}
 
 permissions:

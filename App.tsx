@@ -8,6 +8,8 @@ import { Shop } from './pages/Shop';
 import { ProductDetail } from './pages/ProductDetail';
 import { Blog } from './pages/Blog';
 import { Admin } from './pages/Admin';
+import { Terms } from './pages/Terms';
+import { Privacy } from './pages/Privacy';
 import { AIStylist } from './components/AIStylist';
 import { WishlistProvider } from './context/WishlistContext';
 
@@ -32,6 +34,8 @@ function App() {
               <Route path="/shop" element={<Shop />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/privacy" element={<Privacy />} />
               <Route path="/product/:id" element={<ProductDetail />} />
             </Routes>
           </main>
