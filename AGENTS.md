@@ -193,3 +193,32 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
   - Workflow gereksiz şekilde fail etmek yerine üretime devam eder.
 - SEO/Sitemap kontrolü:
   - Yeni route eklenmedi; `public/sitemap.xml` kontrol edildi, `/`, `/#/shop`, `/#/blog` mevcut ve yeterli.
+
+## Son Görev Özeti (2026-02-11 / SEO Magnet Blog Dönüşümü + İngilizce Zorunluluğu)
+- Kullanıcı geri bildirimi:
+  - Blog içerikleri tamamen İngilizce olmalı.
+  - Eski Türkçe blog kaydı tamamen kaldırılmalı.
+  - Günlük blog üretici "haber özeti" değil, satın alma niyeti yakalayan "SEO magnet / shopping decision engine" formatında yazmalı.
+- Yapılanlar:
+  - `scripts/gemini_daily_fashion_blog.py` prompt mimarisi güncellendi:
+    - zorunlu `searchIntentHook` eklendi (gelin karar çatışması odaklı giriş),
+    - section formatı Observation → Meaning → Action mantığına geçirildi,
+    - her trend için `goodFor`, `notIdealFor`, `bodyEffect`, `bestEventFit` alanları zorunlu hale getirildi,
+    - `relatedSearches`, `stylingAlternatives`, `mistakesToAvoid` blokları zorunlu hale getirildi,
+    - içerik dili için "100% English" kuralı prompt seviyesinde netleştirildi.
+  - Script doğrulama/normalizasyon katmanı güncellendi:
+    - yeni alanlar için guard + fallback eklendi,
+    - Türkçe karakter/kelime sinyali tespitinde İngilizce fallback metinleri üretiliyor,
+    - index güncellemesinde Türkçe içerik taşıyan legacy kayıtlar otomatik filtreleniyor.
+  - Markdown render formatı decision-engine yapıya geçirildi:
+    - Search Intent Hook,
+    - Bridal Decision Trend Breakdown,
+    - Related Searches,
+    - Styling Alternatives,
+    - Mistakes Brides Make bölümleri eklendi.
+  - Legacy Türkçe blog kaldırıldı:
+    - `public/blog/2026-02-11-us-fashion-trends.md` silindi,
+    - `public/blog/index.json` içinden Türkçe kayıt çıkarıldı.
+- SEO/Sitemap kontrolü:
+  - Yeni route eklenmedi.
+  - `public/sitemap.xml` yeniden kontrol edildi; `/`, `/#/shop`, `/#/blog` mevcut ve yeterli.

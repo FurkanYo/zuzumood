@@ -231,7 +231,7 @@ def build_blog_payload(client: genai.Client, articles: list[Article], date_str: 
     source_lines = "\n".join([f"- {a.title} | {a.source} | {a.url}" for a in articles])
 
     prompt = f"""
-You are a US fashion editor writing for discoverability and trend momentum.
+You are a US bridal stylist consultant writing shopping-intent fashion analysis.
 Date: {date_str}
 Audience: women in the United States searching bridal and event fashion.
 Daily content type for rotation: {content_type}
@@ -244,6 +244,10 @@ Primary business goals (strict):
 
 Core message to reinforce naturally:
 "This site follows fashion daily like a real fashion source."
+
+Critical writing objective:
+- Do NOT write a news summary.
+- Build a decision guide that moves readers one step closer to choosing a bridal aesthetic identity.
 
 Research and filtering rules:
 - Use ONLY the source list provided below.
@@ -259,23 +263,19 @@ Keyword strategy:
 - Provide exactly 1 primary long-tail keyword + exactly 5 supporting long-tail keywords.
 - Keep usage natural, no keyword stuffing.
 
-Structure rules:
-- Title max 60 characters, magazine-like, preferably list style.
-- Hook intro should explain why trend is hot, who is wearing it, where it is spotted.
-- Main content must read like a human editor (not catalog, not tutorial).
-- End with "who should wear this and when" guidance.
+Structure rules (mandatory SEO magnet format):
+- Title max 60 characters, consultant-style.
+- searchIntentHook must be 90-120 words and start with a real bride problem/decision conflict.
+- For each trend section, write in Observation -> Meaning -> Action logic.
+- For each trend section, explain behavior psychology (why this trend exists now).
+- For each trend section, include buyer decision guidance:
+  - who should wear it
+  - who should NOT wear it
+  - body effect
+  - best event fit
+- Product matching must be soft styling guidance, never direct selling language.
+- End with "who should wear this and when" guidance + mistakes block + related searches block.
 - Length target between {MIN_WORDS} and {MAX_WORDS} words.
-
-Mandatory SEO signal words/phrases that should appear naturally in articleBody:
-- trending
-- lately
-- brides are choosing
-- popular this season
-- lately in the US
-- fashion girls are wearing
-- seen on
-- spotted in
-- popular among brides
 
 Hard bans:
 - keyword stuffing
@@ -290,6 +290,7 @@ Return ONLY strict JSON with this schema:
   "title": "string <= 60 chars",
   "slug": "yyyy-mm-dd-us-bridal-fashion-trends",
   "summary": "120-180 chars, English",
+  "searchIntentHook": "90-120 words, English, decision conflict oriented",
   "heroPrompt": "English image prompt, no text in image",
   "contentType": "one of {CONTENT_TYPES}",
   "primaryKeyword": "string",
@@ -304,14 +305,23 @@ Return ONLY strict JSON with this schema:
   "sections": [
     {{
       "heading": "string",
-      "editorial": "2-4 sentences",
-      "styleIdea": "1-2 sentences",
+      "observation": "1-2 sentences",
+      "meaning": "1-2 sentences explaining psychology/behavior shift",
+      "action": "1-2 sentences with styling decision",
+      "goodFor": ["...", "..."],
+      "notIdealFor": ["...", "..."],
+      "bodyEffect": "short explanation",
+      "bestEventFit": "short explanation",
+      "styleIdea": "1-2 sentences, soft product matching",
       "seenOn": "short phrase",
       "spottedIn": "short phrase",
       "sourceTitle": "string",
       "sourceUrl": "https://..."
     }}
   ],
+  "relatedSearches": ["6-8 long-tail searches"],
+  "stylingAlternatives": ["3-5 alternatives"],
+  "mistakesToAvoid": ["4-6 mistakes"],
   "closing": "3-5 sentences answering who should wear this and when",
   "seo": {{
     "metaTitle": "max 60 chars",
@@ -323,7 +333,11 @@ Critical constraints:
 - sections length must be exactly {SELECTED_NEWS}.
 - supportingKeywords length must be exactly 5.
 - trendValidation length must be at least 3.
+- relatedSearches length 6-8.
+- stylingAlternatives length 3-5.
+- mistakesToAvoid length 4-6.
 - Every sourceUrl and evidenceSources URL must exist in source list.
+- Content must be 100% English.
 - Mention Etsy or ZuzuMood naturally in summary/closing for conversion intent.
 
 Sources:
@@ -341,6 +355,21 @@ Sources:
     return payload
 
 
+def _sanitize_list(value: Any, min_len: int, max_len: int, fallback_prefix: str) -> list[str]:
+    items = value if isinstance(value, list) else []
+    cleaned = [_truncate_words(str(item).strip(), 12) for item in items if str(item).strip()]
+    cleaned = [item for item in cleaned if item]
+    while len(cleaned) < min_len:
+        cleaned.append(f"{fallback_prefix} {len(cleaned) + 1}")
+    return cleaned[:max_len]
+
+
+def _looks_non_english(value: str) -> bool:
+    lowered = (value or "").lower()
+    turkish_markers = ["ş", "ğ", "ı", "ç", "ö", "ü", "moda", "gelin", "trendleri", "abd"]
+    return any(marker in lowered for marker in turkish_markers)
+
+
 def enforce_payload_rules(
     payload: dict[str, Any], articles: list[Article], date_slug: str, content_type: str
 ) -> dict[str, Any]:
@@ -354,11 +383,25 @@ def enforce_payload_rules(
     fallback_url = clean_url(articles[0].url)
 
     payload["contentType"] = payload.get("contentType") or content_type
-    payload["summary"] = _truncate_words(payload.get("summary", ""), 24)
+    payload["summary"] = _truncate_words(payload.get("summary", ""), 30)
+    if _looks_non_english(payload["summary"]):
+        payload["summary"] = "US brides are navigating fast-changing style choices. This guide helps you decide what to wear, why trends are rising, and how to style bridal signals with confidence on ZuzuMood Etsy."
     if "etsy" not in payload["summary"].lower() and "zuzumood" not in payload["summary"].lower():
         payload["summary"] = (payload["summary"] + " Discover matching pieces on ZuzuMood Etsy.").strip()
 
+    hook = _truncate_words(payload.get("searchIntentHook", ""), 120)
+    if not hook or _looks_non_english(hook):
+        hook = (
+            "Many US brides searching for modern bridal outfits are not choosing a traditional gown for every wedding moment. "
+            "They are deciding between courthouse looks, second-look party dresses, and photo-ready symbolic pieces that still feel bridal. "
+            "The common mistake is picking an outfit that looks trendy in person but reads casual in photos. "
+            "This guide breaks down what each trend means, who it works for, and how to make a confident styling decision."
+        )
+    payload["searchIntentHook"] = hook
+
     title = str(payload.get("title", "")).strip() or "US Bridal Trend Report"
+    if _looks_non_english(title):
+        title = "US Bridal Trends: What to Wear and Why"
     payload["title"] = title[:60]
 
     slug = str(payload.get("slug", "")).strip() or f"{date_slug}-us-bridal-fashion-trends"
@@ -366,7 +409,7 @@ def enforce_payload_rules(
 
     primary_keyword = str(payload.get("primaryKeyword", "")).strip()
     if not primary_keyword:
-        primary_keyword = f"{date_slug[:4]} summer bridal fashion trends usa"
+        primary_keyword = f"{date_slug[:4]} bridal second look outfit ideas usa"
     payload["primaryKeyword"] = primary_keyword
 
     supporting = payload.get("supportingKeywords", [])
@@ -386,9 +429,15 @@ def enforce_payload_rules(
     for section in sections:
         if not isinstance(section, dict):
             raise ValueError("section entry must be object")
-        section["heading"] = _truncate_words(section.get("heading", "Trend highlight"), 8)
-        section["editorial"] = _truncate_words(section.get("editorial", ""), 40)
-        section["styleIdea"] = _truncate_words(section.get("styleIdea", ""), 14)
+        section["heading"] = _truncate_words(section.get("heading", "Trend highlight"), 10)
+        section["observation"] = _truncate_words(section.get("observation", ""), 26)
+        section["meaning"] = _truncate_words(section.get("meaning", ""), 28)
+        section["action"] = _truncate_words(section.get("action", ""), 26)
+        section["goodFor"] = _sanitize_list(section.get("goodFor", []), 2, 4, "Best for")
+        section["notIdealFor"] = _sanitize_list(section.get("notIdealFor", []), 2, 4, "Avoid for")
+        section["bodyEffect"] = _truncate_words(section.get("bodyEffect", ""), 12)
+        section["bestEventFit"] = _truncate_words(section.get("bestEventFit", ""), 12)
+        section["styleIdea"] = _truncate_words(section.get("styleIdea", ""), 18)
         section["seenOn"] = _truncate_words(section.get("seenOn", ""), 8)
         section["spottedIn"] = _truncate_words(section.get("spottedIn", ""), 8)
         section["sourceTitle"] = _truncate_words(section.get("sourceTitle", "Source"), 12)
@@ -434,6 +483,10 @@ def enforce_payload_rules(
             cleaned_evidence = [fallback_url]
         validation["evidenceSources"] = cleaned_evidence
 
+    payload["relatedSearches"] = _sanitize_list(payload.get("relatedSearches", []), 6, 8, "bridal search")
+    payload["stylingAlternatives"] = _sanitize_list(payload.get("stylingAlternatives", []), 3, 5, "styling alternative")
+    payload["mistakesToAvoid"] = _sanitize_list(payload.get("mistakesToAvoid", []), 4, 6, "bridal mistake")
+
     seo = payload.get("seo", {})
     if not isinstance(seo, dict):
         seo = {}
@@ -444,10 +497,9 @@ def enforce_payload_rules(
     if "zuzumood" not in meta_description.lower() and "etsy" not in meta_description.lower():
         meta_description = f"{meta_description} Explore ZuzuMood Etsy."[:155]
     payload["seo"] = {"metaTitle": meta_title[:60], "metaDescription": meta_description[:155]}
-    payload["closing"] = _truncate_words(payload.get("closing", ""), 50)
+    payload["closing"] = _truncate_words(payload.get("closing", ""), 70)
 
     return payload
-
 
 def generate_cover_image(client: genai.Client, prompt: str, output_path: Path) -> bool:
     response = client.models.generate_content(
@@ -473,6 +525,7 @@ def generate_cover_image(client: genai.Client, prompt: str, output_path: Path) -
 def to_markdown(payload: dict[str, Any], date_iso: str, image_path: str) -> str:
     title = str(payload.get("title", "")).strip()
     summary = str(payload.get("summary", "")).strip()
+    hook = str(payload.get("searchIntentHook", "")).strip()
     seo = payload.get("seo", {})
     sections = payload.get("sections", [])
     validations = payload.get("trendValidation", [])
@@ -497,6 +550,10 @@ def to_markdown(payload: dict[str, Any], date_iso: str, image_path: str) -> str:
         "",
         summary,
         "",
+        "## Search Intent Hook",
+        "",
+        hook,
+        "",
         "## Trend Validation Snapshot",
         "",
     ]
@@ -513,14 +570,28 @@ def to_markdown(payload: dict[str, Any], date_iso: str, image_path: str) -> str:
             ]
         )
 
-    lines.extend(["", "## What’s trending now", ""])
+    lines.extend(["", "## Bridal Decision Trend Breakdown", ""])
 
     for idx, section in enumerate(sections, start=1):
+        good_for = ", ".join(section.get("goodFor", []))
+        not_ideal = ", ".join(section.get("notIdealFor", []))
         lines.extend(
             [
                 f"### {idx}. {str(section.get('heading', '')).strip()}",
                 "",
-                str(section.get("editorial", "")).strip(),
+                f"**Observation:** {str(section.get('observation', '')).strip()}",
+                "",
+                f"**Meaning:** {str(section.get('meaning', '')).strip()}",
+                "",
+                f"**Action:** {str(section.get('action', '')).strip()}",
+                "",
+                f"**Good for:** {good_for}",
+                "",
+                f"**Not ideal for:** {not_ideal}",
+                "",
+                f"**Body effect:** {str(section.get('bodyEffect', '')).strip()}",
+                "",
+                f"**Best event fit:** {str(section.get('bestEventFit', '')).strip()}",
                 "",
                 f"**Style idea:** {str(section.get('styleIdea', '')).strip()}",
                 "",
@@ -535,12 +606,24 @@ def to_markdown(payload: dict[str, Any], date_iso: str, image_path: str) -> str:
 
     lines.extend(
         [
-            "## Primary and supporting searches",
+            "## Primary and Supporting Searches",
             "",
             f"- Primary: **{payload.get('primaryKeyword', '')}**",
             *[f"- Supporting: {kw}" for kw in payload.get("supportingKeywords", [])],
             "",
-            "## Who should wear this and when",
+            "## Related Searches Brides Also Use",
+            "",
+            *[f"- {item}" for item in payload.get("relatedSearches", [])],
+            "",
+            "## Styling Alternatives",
+            "",
+            *[f"- {item}" for item in payload.get("stylingAlternatives", [])],
+            "",
+            "## Mistakes Brides Make",
+            "",
+            *[f"- {item}" for item in payload.get("mistakesToAvoid", [])],
+            "",
+            "## Who Should Wear This and When",
             "",
             str(payload.get("closing", "")).strip(),
             "",
@@ -558,7 +641,6 @@ def to_markdown(payload: dict[str, Any], date_iso: str, image_path: str) -> str:
         raise ValueError(f"Generated markdown word count out of expected range: {word_count}")
     return markdown
 
-
 def update_index(slug: str, title: str, summary: str, date_iso: str, image_path: str) -> None:
     entries: list[dict[str, str]] = []
     if INDEX_PATH.exists():
@@ -567,7 +649,15 @@ def update_index(slug: str, title: str, summary: str, date_iso: str, image_path:
         except json.JSONDecodeError:
             entries = []
 
-    entries = [entry for entry in entries if entry.get("slug") != slug]
+    english_only_entries: list[dict[str, str]] = []
+    for entry in entries:
+        title_value = str(entry.get("title", ""))
+        summary_value = str(entry.get("summary", ""))
+        if _looks_non_english(f"{title_value} {summary_value}"):
+            continue
+        english_only_entries.append(entry)
+
+    entries = [entry for entry in english_only_entries if entry.get("slug") != slug]
     entries.insert(
         0,
         {
@@ -582,7 +672,6 @@ def update_index(slug: str, title: str, summary: str, date_iso: str, image_path:
 
     INDEX_PATH.parent.mkdir(parents=True, exist_ok=True)
     INDEX_PATH.write_text(json.dumps(entries[:30], ensure_ascii=False, indent=2), encoding="utf-8")
-
 
 def main() -> None:
     api_key = get_api_key()
