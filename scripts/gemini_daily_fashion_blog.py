@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate a daily US fashion trend blog post with Gemini.
+"""Generate a daily US bridal/women fashion trend blog post with Gemini.
 
 Outputs:
 - public/blog/<slug>.md
@@ -35,8 +35,34 @@ INDEX_PATH = BLOG_DIR / "index.json"
 
 TEXT_MODEL = "gemini-2.5-flash"
 IMAGE_MODEL = "gemini-2.5-flash-image"
-MAX_NEWS = 12
-SELECTED_NEWS = 5
+MAX_NEWS = 24
+SELECTED_NEWS = 10
+MIN_WORDS = 800
+MAX_WORDS = 1400
+
+CONTENT_TYPES = [
+    "Trend report",
+    "Style inspiration",
+    "Event outfit",
+    "Bridal style",
+    "Bachelorette",
+    "Bridal shower",
+    "Wedding guest",
+    "Aesthetic trend",
+]
+
+SEARCH_QUERIES = [
+    "bridal fashion trend United States",
+    "wedding guest dresses trend US",
+    "bridal shower outfit ideas USA",
+    "bachelorette style trend tiktok",
+    "pinterest bridal trend United States",
+    "celebrity bridal look trend",
+    "fashion week wedding style US",
+    "rehearsal dinner outfit ideas USA",
+    "hamptons wedding guest fashion",
+    "new york bachelorette outfit trend",
+]
 
 
 @dataclass
@@ -68,31 +94,22 @@ def clean_url(url: str) -> str:
     if not parsed.query:
         return url
 
-    keep = []
-    for k, values in parse_qs(parsed.query, keep_blank_values=True).items():
-        low = k.lower()
+    keep: list[tuple[str, str]] = []
+    for key, values in parse_qs(parsed.query, keep_blank_values=True).items():
+        low = key.lower()
         if low.startswith("utm") or low in {"oc", "ved", "usg", "ei", "sa", "source"}:
             continue
-        for v in values:
-            keep.append((k, v))
+        for value in values:
+            keep.append((key, value))
 
     query = urlencode(keep, doseq=True)
     return urlunparse(parsed._replace(query=query, fragment=""))
 
 
 def fetch_us_fashion_news(limit: int = MAX_NEWS) -> list[Article]:
-    queries = [
-        "fashion trend United States",
-        "street style US fashion",
-        "fashion week US designers",
-        "celebrity fashion trend",
-        "viral fashion trend tiktok",
-        "sustainable fashion US",
-    ]
-
     feeds = [
-        f"https://news.google.com/rss/search?q={q.replace(' ', '+')}&hl=en-US&gl=US&ceid=US:en"
-        for q in queries
+        f"https://news.google.com/rss/search?q={query.replace(' ', '+')}&hl=en-US&gl=US&ceid=US:en"
+        for query in SEARCH_QUERIES
     ]
 
     seen: set[str] = set()
@@ -120,14 +137,13 @@ def fetch_us_fashion_news(limit: int = MAX_NEWS) -> list[Article]:
                 source = "Unknown"
                 if hasattr(entry, "source") and isinstance(entry.source, dict):
                     source = entry.source.get("title") or "Unknown"
-                published = getattr(entry, "published", "") or ""
 
                 articles.append(
                     Article(
                         title=title,
                         url=clean_url(final_url),
                         source=source,
-                        published=published,
+                        published=getattr(entry, "published", "") or "",
                     )
                 )
 
@@ -150,48 +166,115 @@ def _extract_json(text: str) -> dict[str, Any]:
     return json.loads(cleaned[start : end + 1])
 
 
+def _slugify(value: str) -> str:
+    return re.sub(r"[^a-z0-9-]", "-", value.lower()).strip("-")
+
+
+def _pick_content_type(date_slug: str) -> str:
+    # deterministic rotation based on date for predictable daily variety
+    ordinal = sum(ord(ch) for ch in date_slug)
+    return CONTENT_TYPES[ordinal % len(CONTENT_TYPES)]
+
+
 def build_blog_payload(client: genai.Client, articles: list[Article], date_str: str) -> dict[str, Any]:
-    source_lines = "\n".join(
-        [f"- {a.title} | {a.source} | {a.url}" for a in articles]
-    )
+    content_type = _pick_content_type(date_str)
+    source_lines = "\n".join([f"- {a.title} | {a.source} | {a.url}" for a in articles])
 
     prompt = f"""
-You are a senior fashion editor and e-commerce SEO strategist.
-Task: Create a DAILY Turkish blog draft about current trending/hit fashion news in the United States for {date_str}.
-Business goal: drive qualified organic traffic to Etsy store https://www.etsy.com/shop/ZuzuMood.
+You are a US fashion editor writing for discoverability and trend momentum.
+Date: {date_str}
+Audience: women in the United States searching bridal and event fashion.
+Daily content type for rotation: {content_type}
 
-Use ONLY the source list below.
-Select exactly {SELECTED_NEWS} strongest trend stories.
+Primary business goals (strict):
+1) Win Google Discover visibility.
+2) Attract Pinterest traffic.
+3) Rank on long-tail US searches.
+4) Build authority in bridal & women's fashion.
 
-Return only strict JSON with this schema:
+Core message to reinforce naturally:
+"This site follows fashion daily like a real fashion source."
+
+Research and filtering rules:
+- Use ONLY the source list provided below.
+- Content must be US-centered. Do NOT write Turkey-focused content.
+- Reject non-trend angles. A trend is valid only if at least 2 are true and explicitly stated in validation:
+  - seen on a celebrity/runway/public figure
+  - launched at multiple retailers
+  - rising on TikTok or Pinterest
+  - seasonal fit for current period
+  - clear US search intent
+
+Keyword strategy:
+- Provide exactly 1 primary long-tail keyword + exactly 5 supporting long-tail keywords.
+- Keep usage natural, no keyword stuffing.
+
+Structure rules:
+- Title max 60 characters, magazine-like, preferably list style.
+- Hook intro should explain why trend is hot, who is wearing it, where it is spotted.
+- Main content must read like a human editor (not catalog, not tutorial).
+- End with "who should wear this and when" guidance.
+- Length target between {MIN_WORDS} and {MAX_WORDS} words.
+
+Mandatory SEO signal words/phrases that should appear naturally in articleBody:
+- trending
+- lately
+- brides are choosing
+- popular this season
+- lately in the US
+- fashion girls are wearing
+- seen on
+- spotted in
+- popular among brides
+
+Hard bans:
+- keyword stuffing
+- generic fashion guide
+- encyclopedic style
+- men's fashion
+- fashion history
+- step-by-step outfit tutorial tone
+
+Return ONLY strict JSON with this schema:
 {{
-  "title": "string",
-  "slug": "yyyy-mm-dd-us-fashion-trends",
-  "summary": "max 180 chars Turkish summary",
-  "heroPrompt": "English prompt for image generation, no text in image",
-  "items": [
+  "title": "string <= 60 chars",
+  "slug": "yyyy-mm-dd-us-bridal-fashion-trends",
+  "summary": "120-180 chars, English",
+  "heroPrompt": "English image prompt, no text in image",
+  "contentType": "one of {CONTENT_TYPES}",
+  "primaryKeyword": "string",
+  "supportingKeywords": ["k1", "k2", "k3", "k4", "k5"],
+  "trendValidation": [
     {{
-      "icon": "single emoji",
-      "headline": "short Turkish heading",
-      "whyItIsHot": "2-3 Turkish sentences",
-      "styleTip": "1 Turkish practical style tip",
-      "sourceTitle": "original source title",
+      "claim": "short trend claim",
+      "checksPassed": ["from the 5 checks above, at least 2"],
+      "evidenceSources": ["https://...", "https://..."]
+    }}
+  ],
+  "sections": [
+    {{
+      "heading": "string",
+      "editorial": "2-4 sentences",
+      "styleIdea": "1-2 sentences",
+      "seenOn": "short phrase",
+      "spottedIn": "short phrase",
+      "sourceTitle": "string",
       "sourceUrl": "https://..."
     }}
   ],
+  "closing": "3-5 sentences answering who should wear this and when",
   "seo": {{
     "metaTitle": "max 60 chars",
     "metaDescription": "max 155 chars"
   }}
 }}
 
-Rules:
-- "items" must contain exactly {SELECTED_NEWS} entries.
-- Keep tone practical, modern, and concise.
-- Optimize wording for Etsy purchase intent and US fashion search intent.
-- Mention "Etsy" or "ZuzuMood" naturally in summary or tips to support conversion SEO.
-- Do not invent brands or links.
-- sourceUrl must be one from provided sources.
+Critical constraints:
+- sections length must be exactly {SELECTED_NEWS}.
+- supportingKeywords length must be exactly 5.
+- trendValidation length must be at least 3.
+- Every sourceUrl and evidenceSources URL must exist in source list.
+- Mention Etsy or ZuzuMood naturally in summary/closing for conversion intent.
 
 Sources:
 {source_lines}
@@ -200,47 +283,88 @@ Sources:
     resp = client.models.generate_content(
         model=TEXT_MODEL,
         contents=prompt,
-        config=types.GenerateContentConfig(temperature=0.5),
+        config=types.GenerateContentConfig(temperature=0.45),
     )
 
-    text = (resp.text or "").strip()
-    payload = _extract_json(text)
-    payload = enforce_etsy_focus(payload)
-
-    if len(payload.get("items", [])) != SELECTED_NEWS:
-        raise ValueError("Gemini did not return expected number of items")
-
+    payload = _extract_json((resp.text or "").strip())
+    payload = enforce_payload_rules(payload, articles, date_str, content_type)
     return payload
 
 
+def enforce_payload_rules(
+    payload: dict[str, Any], articles: list[Article], date_slug: str, content_type: str
+) -> dict[str, Any]:
+    allowed_urls = {a.url for a in articles}
 
+    payload["contentType"] = payload.get("contentType") or content_type
+    payload["summary"] = str(payload.get("summary", "")).strip()
+    if "etsy" not in payload["summary"].lower() and "zuzumood" not in payload["summary"].lower():
+        payload["summary"] = (payload["summary"] + " Discover matching pieces on ZuzuMood Etsy.").strip()
 
-def enforce_etsy_focus(payload: dict[str, Any]) -> dict[str, Any]:
-    summary = str(payload.get("summary", "")).strip()
-    if "etsy" not in summary.lower() and "zuzumood" not in summary.lower():
-        payload["summary"] = f"{summary} ZuzuMood Etsy mağazası için trend odaklı stil fikirleri içerir.".strip()
+    title = str(payload.get("title", "")).strip() or "US Bridal Trend Report"
+    payload["title"] = title[:60]
 
-    items = payload.get("items", [])
-    if isinstance(items, list):
-        for item in items:
-            if not isinstance(item, dict):
-                continue
-            tip = str(item.get("styleTip", "")).strip()
-            if "etsy" not in tip.lower() and "zuzumood" not in tip.lower():
-                item["styleTip"] = f"{tip} Uyumlu parçalar için ZuzuMood Etsy mağazasına göz at.".strip()
+    slug = str(payload.get("slug", "")).strip() or f"{date_slug}-us-bridal-fashion-trends"
+    payload["slug"] = _slugify(slug)
+
+    primary_keyword = str(payload.get("primaryKeyword", "")).strip()
+    if not primary_keyword:
+        primary_keyword = f"{date_slug[:4]} summer bridal fashion trends usa"
+    payload["primaryKeyword"] = primary_keyword
+
+    supporting = payload.get("supportingKeywords", [])
+    if not isinstance(supporting, list):
+        supporting = []
+    supporting = [str(item).strip() for item in supporting if str(item).strip()]
+    while len(supporting) < 5:
+        supporting.append(f"bridal trend idea {len(supporting) + 1} usa")
+    payload["supportingKeywords"] = supporting[:5]
+
+    sections = payload.get("sections", [])
+    if not isinstance(sections, list):
+        raise ValueError("sections must be a list")
+    if len(sections) != SELECTED_NEWS:
+        raise ValueError(f"Gemini did not return exactly {SELECTED_NEWS} sections")
+
+    for section in sections:
+        if not isinstance(section, dict):
+            raise ValueError("section entry must be object")
+        source_url = clean_url(str(section.get("sourceUrl", "")).strip())
+        if source_url not in allowed_urls:
+            raise ValueError("section sourceUrl not in provided sources")
+        section["sourceUrl"] = source_url
+
+    validations = payload.get("trendValidation", [])
+    if not isinstance(validations, list) or len(validations) < 3:
+        raise ValueError("trendValidation must contain at least 3 entries")
+
+    for validation in validations:
+        if not isinstance(validation, dict):
+            raise ValueError("trendValidation item must be object")
+        checks = validation.get("checksPassed", [])
+        if not isinstance(checks, list) or len(checks) < 2:
+            raise ValueError("each trendValidation item must pass at least 2 checks")
+        evidence = validation.get("evidenceSources", [])
+        if not isinstance(evidence, list) or not evidence:
+            raise ValueError("trendValidation item must include evidenceSources")
+        cleaned_evidence = [clean_url(str(url).strip()) for url in evidence if str(url).strip()]
+        if not cleaned_evidence or any(url not in allowed_urls for url in cleaned_evidence):
+            raise ValueError("evidenceSources must come from provided sources")
+        validation["evidenceSources"] = cleaned_evidence
 
     seo = payload.get("seo", {})
-    if isinstance(seo, dict):
-        meta_title = str(seo.get("metaTitle", "")).strip()
-        meta_description = str(seo.get("metaDescription", "")).strip()
-
-        if meta_title and "etsy" not in meta_title.lower() and "zuzumood" not in meta_title.lower():
-            seo["metaTitle"] = f"{meta_title} | ZuzuMood Etsy"[:60]
-
-        if meta_description and "etsy" not in meta_description.lower() and "zuzumood" not in meta_description.lower():
-            seo["metaDescription"] = f"{meta_description} Trend parçalar için ZuzuMood Etsy mağazasını ziyaret edin."[:155]
+    if not isinstance(seo, dict):
+        seo = {}
+    meta_title = str(seo.get("metaTitle", payload["title"])).strip()
+    meta_description = str(seo.get("metaDescription", payload["summary"])).strip()
+    if "zuzumood" not in meta_title.lower() and "etsy" not in meta_title.lower():
+        meta_title = f"{meta_title} | ZuzuMood"[:60]
+    if "zuzumood" not in meta_description.lower() and "etsy" not in meta_description.lower():
+        meta_description = f"{meta_description} Explore ZuzuMood Etsy."[:155]
+    payload["seo"] = {"metaTitle": meta_title[:60], "metaDescription": meta_description[:155]}
 
     return payload
+
 
 def generate_cover_image(client: genai.Client, prompt: str, output_path: Path) -> bool:
     response = client.models.generate_content(
@@ -264,9 +388,11 @@ def generate_cover_image(client: genai.Client, prompt: str, output_path: Path) -
 
 
 def to_markdown(payload: dict[str, Any], date_iso: str, image_path: str) -> str:
-    title = payload["title"].strip()
-    summary = payload["summary"].strip()
+    title = str(payload.get("title", "")).strip()
+    summary = str(payload.get("summary", "")).strip()
     seo = payload.get("seo", {})
+    sections = payload.get("sections", [])
+    validations = payload.get("trendValidation", [])
 
     lines = [
         "---",
@@ -276,42 +402,78 @@ def to_markdown(payload: dict[str, Any], date_iso: str, image_path: str) -> str:
         f"image: {image_path}",
         f"metaTitle: {json.dumps(seo.get('metaTitle', title), ensure_ascii=False)}",
         f"metaDescription: {json.dumps(seo.get('metaDescription', summary), ensure_ascii=False)}",
-        "locale: tr-TR",
+        f"contentType: {json.dumps(payload.get('contentType', ''), ensure_ascii=False)}",
+        f"primaryKeyword: {json.dumps(payload.get('primaryKeyword', ''), ensure_ascii=False)}",
+        f"supportingKeywords: {json.dumps(payload.get('supportingKeywords', []), ensure_ascii=False)}",
+        "locale: en-US",
         "region: us",
-        "category: fashion-trends",
+        "category: bridal-fashion-trends",
         "---",
         "",
         f"# {title}",
         "",
         summary,
         "",
+        "## Trend Validation Snapshot",
+        "",
     ]
 
-    for idx, item in enumerate(payload.get("items", []), start=1):
+    for validation in validations:
+        claim = str(validation.get("claim", "Trend signal")).strip()
+        checks = validation.get("checksPassed", [])
+        checks_text = ", ".join(str(item).strip() for item in checks if str(item).strip())
+        evidence_links = " | ".join(f"[{url}]({url})" for url in validation.get("evidenceSources", []))
         lines.extend(
             [
-                f"## {idx}. {item.get('icon', '✨')} {item.get('headline', '').strip()}",
+                f"- **{claim}** — checks passed: {checks_text}",
+                f"  - evidence: {evidence_links}",
+            ]
+        )
+
+    lines.extend(["", "## What’s trending now", ""])
+
+    for idx, section in enumerate(sections, start=1):
+        lines.extend(
+            [
+                f"### {idx}. {str(section.get('heading', '')).strip()}",
                 "",
-                item.get("whyItIsHot", "").strip(),
+                str(section.get("editorial", "")).strip(),
                 "",
-                f"**Stil Önerisi:** {item.get('styleTip', '').strip()}",
+                f"**Style idea:** {str(section.get('styleIdea', '')).strip()}",
                 "",
-                f"Kaynak: [{item.get('sourceTitle', 'Haber')}]({item.get('sourceUrl', '#')})",
+                f"Seen on: {str(section.get('seenOn', '')).strip()}",
+                "",
+                f"Spotted in: {str(section.get('spottedIn', '')).strip()}",
+                "",
+                f"Source: [{str(section.get('sourceTitle', 'Source')).strip()}]({str(section.get('sourceUrl', '#')).strip()})",
                 "",
             ]
         )
 
     lines.extend(
         [
+            "## Primary and supporting searches",
+            "",
+            f"- Primary: **{payload.get('primaryKeyword', '')}**",
+            *[f"- Supporting: {kw}" for kw in payload.get("supportingKeywords", [])],
+            "",
+            "## Who should wear this and when",
+            "",
+            str(payload.get("closing", "")).strip(),
+            "",
             "---",
             "",
-            "ABD trendlerini Etsy odaklı alışverişe çevirmek için mağazamızı ziyaret edin: https://www.etsy.com/shop/ZuzuMood",
+            "If you want trend-aligned bridal pieces, browse ZuzuMood on Etsy: https://www.etsy.com/shop/ZuzuMood",
             "",
-            "Bu içerik her gün otomatik olarak Gemini ile güncellenir.",
+            "This post is generated daily to track what women in the US are searching and saving lately.",
         ]
     )
 
-    return "\n".join(lines).strip() + "\n"
+    markdown = "\n".join(lines).strip() + "\n"
+    word_count = len(re.findall(r"\b\w+\b", markdown))
+    if word_count < MIN_WORDS or word_count > MAX_WORDS + 250:
+        raise ValueError(f"Generated markdown word count out of expected range: {word_count}")
+    return markdown
 
 
 def update_index(slug: str, title: str, summary: str, date_iso: str, image_path: str) -> None:
@@ -322,7 +484,7 @@ def update_index(slug: str, title: str, summary: str, date_iso: str, image_path:
         except json.JSONDecodeError:
             entries = []
 
-    entries = [e for e in entries if e.get("slug") != slug]
+    entries = [entry for entry in entries if entry.get("slug") != slug]
     entries.insert(
         0,
         {
@@ -351,17 +513,17 @@ def main() -> None:
 
     articles = fetch_us_fashion_news()
     if not articles:
-        raise RuntimeError("No US fashion news found from RSS feeds")
+        raise RuntimeError("No US bridal/fashion news found from RSS feeds")
 
     payload = build_blog_payload(client, articles, date_slug)
-    slug = payload.get("slug") or f"{date_slug}-us-fashion-trends"
-    slug = re.sub(r"[^a-z0-9-]", "-", slug.lower()).strip("-")
+    slug = payload.get("slug") or f"{date_slug}-us-bridal-fashion-trends"
+    slug = _slugify(slug)
 
     image_rel = f"/blog/images/{slug}.png"
     image_out = IMAGE_DIR / f"{slug}.png"
     image_ok = False
     try:
-        image_ok = generate_cover_image(client, payload.get("heroPrompt", "fashion editorial photo"), image_out)
+        image_ok = generate_cover_image(client, str(payload.get("heroPrompt", "bridal fashion editorial")), image_out)
     except Exception:
         image_ok = False
 
@@ -375,8 +537,8 @@ def main() -> None:
 
     update_index(
         slug=slug,
-        title=payload.get("title", slug),
-        summary=payload.get("summary", ""),
+        title=str(payload.get("title", slug)),
+        summary=str(payload.get("summary", "")),
         date_iso=date_iso,
         image_path=image_rel,
     )
