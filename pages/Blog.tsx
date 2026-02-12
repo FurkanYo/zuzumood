@@ -11,8 +11,10 @@ interface BlogPostMeta {
 }
 
 interface MarkdownBlock {
-  type: 'h1' | 'h2' | 'p' | 'hr';
+  type: 'h1' | 'h2' | 'p' | 'hr' | 'img';
   content?: string;
+  src?: string;
+  alt?: string;
 }
 
 const BASE_URL = import.meta.env.BASE_URL || '/';
@@ -82,6 +84,17 @@ const toBlocks = (markdown: string): MarkdownBlock[] => {
     if (line.startsWith('# ')) {
       flushParagraph();
       blocks.push({ type: 'h1', content: line.slice(2).trim() });
+      return;
+    }
+
+    const imageMatch = line.match(/^!\[([^\]]*)\]\((.+)\)$/);
+    if (imageMatch) {
+      flushParagraph();
+      blocks.push({
+        type: 'img',
+        alt: imageMatch[1].trim(),
+        src: imageMatch[2].trim(),
+      });
       return;
     }
 
@@ -309,6 +322,19 @@ export const Blog: React.FC = () => {
 
                   if (block.type === 'hr') {
                     return <hr key={index} className="border-gray-200 my-4" />;
+                  }
+
+                  if (block.type === 'img') {
+                    return (
+                      <figure key={index} className="my-2">
+                        <img
+                          src={toAssetUrl(block.src || '')}
+                          alt={block.alt || selectedPost?.title || 'Blog image'}
+                          className="w-full rounded-2xl border border-gray-100"
+                          loading="lazy"
+                        />
+                      </figure>
+                    );
                   }
 
                   return (
