@@ -71,7 +71,9 @@ Personalized jewelry, framed memories, or a custom keepsake box.
 
 ## Final Thoughts
 
-Bridesmaid proposal gifts are not just objects. They are emotional anchors that mark the beginning of your wedding journey together. Choose pieces that feel sincere, personal, and timeless.
+Bridesmaid proposal gifts are not just objects. They are emotional anchors that mark the beginning of your wedding journey together. Samimi, kişisel ve zamansız hissettiren parçalar seçin.
+
+![Etna Sans Serif](/blog/Etna%20Sans%20Serif%20%2833%29.png)
 
 ---
 
