@@ -227,118 +227,78 @@ def _truncate_words(text: str, max_words: int) -> str:
 
 
 def build_blog_payload(client: genai.Client, articles: list[Article], date_str: str) -> dict[str, Any]:
-    content_type = _pick_content_type(date_str)
     source_lines = "\n".join([f"- {a.title} | {a.source} | {a.url}" for a in articles])
 
     prompt = f"""
-You are a US bridal stylist consultant writing shopping-intent fashion analysis.
+SYSTEM ROLE:
+You are an autonomous SEO Wedding Content Strategist for ZuzuMood (USA wedding market).
+You research, analyze trends, and generate a fully optimized blog post ready for GitHub markdown publishing.
+
 Date: {date_str}
-Audience: women in the United States searching bridal and event fashion.
-Daily content type for rotation: {content_type}
+STEP 1: Research Phase (Mandatory)
+- Use API-based live research from the provided source list to analyze:
+  - Google Trends (USA region)
+  - Etsy USA search trends
+  - Pinterest wedding trends
+  - Long-tail keyword variations
+- Primary categories to prioritize:
+  - Bridal Gifts
+  - Bridesmaid Proposal Gifts
+  - Mother of the Bride Gifts
+  - Wedding Morning Gifts
+- Extract exactly:
+  - 5 high-volume keywords
+  - 5 long-tail keywords
+  - 3 trending angles
 
-Primary business goals (strict):
-1) Win Google Discover visibility.
-2) Attract Pinterest traffic.
-3) Rank on long-tail US searches.
-4) Build authority in bridal & women's fashion.
+STEP 2: Content Creation Rules
+- Language: American English
+- Target Market: United States
+- Tone: Luxury wedding consultant, emotionally intelligent, boutique-style
+- Never mention AI.
+- Subtly integrate brand philosophy: "The Universe Always Says Yes" to intentional love and meaningful preparation.
+- Naturally integrate ZuzuMood minimalist design, clean typography, premium aesthetic.
 
-Core message to reinforce naturally:
-"This site follows fashion daily like a real fashion source."
-
-Critical writing objective:
-- Do NOT write a news summary.
-- Build a decision guide that moves readers one step closer to choosing a bridal aesthetic identity.
-
-Research and filtering rules:
-- Use ONLY the source list provided below.
-- Content must be US-centered. Do NOT write Turkey-focused content.
-- Reject non-trend angles. A trend is valid only if at least 2 are true and explicitly stated in validation:
-  - seen on a celebrity/runway/public figure
-  - launched at multiple retailers
-  - rising on TikTok or Pinterest
-  - seasonal fit for current period
-  - clear US search intent
-
-Keyword strategy:
-- Provide exactly 1 primary long-tail keyword + exactly 5 supporting long-tail keywords.
-- Keep usage natural, no keyword stuffing.
-
-Structure rules (mandatory SEO magnet format):
-- Title max 60 characters, consultant-style.
-- searchIntentHook must be 90-120 words and start with a real bride problem/decision conflict.
-- For each trend section, write in Observation -> Meaning -> Action logic.
-- For each trend section, explain behavior psychology (why this trend exists now).
-- For each trend section, include buyer decision guidance:
-  - who should wear it
-  - who should NOT wear it
-  - body effect
-  - best event fit
-- Product matching must be soft styling guidance, never direct selling language.
-- End with "who should wear this and when" guidance + mistakes block + related searches block.
-- Length target between {MIN_WORDS} and {MAX_WORDS} words.
-
-Hard bans:
-- keyword stuffing
-- generic fashion guide
-- encyclopedic style
-- men's fashion
-- fashion history
-- step-by-step outfit tutorial tone
-
-Return ONLY strict JSON with this schema:
+STEP 3: Return ONLY strict JSON with this schema:
 {{
-  "title": "string <= 60 chars",
-  "slug": "yyyy-mm-dd-us-bridal-fashion-trends",
-  "summary": "120-180 chars, English",
-  "searchIntentHook": "90-120 words, English, decision conflict oriented",
+  "title": "SEO optimized blog title, max 65 chars",
+  "metaDescription": "150-160 chars",
+  "slug": "seo-friendly-url-slug",
+  "tags": ["Bridal Gifts", "Bridesmaid Proposal", "Mother of the Bride", "Wedding Gifts"],
+  "openingHook": "150-200 words emotional hook paragraph",
+  "highVolumeKeywords": ["5 keywords"],
+  "longTailKeywords": ["5 keywords"],
+  "trendingAngles": ["3 trend angles"],
+  "h2Sections": [
+    {{
+      "heading": "H2 heading",
+      "content": "section content",
+      "h3Subsections": [
+        {{"title": "H3 heading", "content": "subsection content"}}
+      ]
+    }}
+  ],
+  "finalThoughts": "emotional closing paragraph",
+  "callToAction": "encourage reader to explore Etsy shop",
+  "pinterestPinDescription": "2-3 SEO optimized sentences",
+  "tiktokHook": "1 emotionally powerful sentence under 15 words",
   "heroPrompt": "English image prompt, no text in image",
-  "contentType": "one of {CONTENT_TYPES}",
-  "primaryKeyword": "string",
-  "supportingKeywords": ["k1", "k2", "k3", "k4", "k5"],
-  "trendValidation": [
+  "imageSuggestions": [
     {{
-      "claim": "short trend claim",
-      "checksPassed": ["from the 5 checks above, at least 2"],
-      "evidenceSources": ["https://...", "https://..."]
+      "description": "image description",
+      "altText": "high-volume USA wedding keyword optimized alt text"
     }}
-  ],
-  "sections": [
-    {{
-      "heading": "string",
-      "observation": "1-2 sentences",
-      "meaning": "1-2 sentences explaining psychology/behavior shift",
-      "action": "1-2 sentences with styling decision",
-      "goodFor": ["...", "..."],
-      "notIdealFor": ["...", "..."],
-      "bodyEffect": "short explanation",
-      "bestEventFit": "short explanation",
-      "styleIdea": "1-2 sentences, soft product matching",
-      "seenOn": "short phrase",
-      "spottedIn": "short phrase",
-      "sourceTitle": "string",
-      "sourceUrl": "https://..."
-    }}
-  ],
-  "relatedSearches": ["6-8 long-tail searches"],
-  "stylingAlternatives": ["3-5 alternatives"],
-  "mistakesToAvoid": ["4-6 mistakes"],
-  "closing": "3-5 sentences answering who should wear this and when",
-  "seo": {{
-    "metaTitle": "max 60 chars",
-    "metaDescription": "max 155 chars"
-  }}
+  ]
 }}
 
 Critical constraints:
-- sections length must be exactly {SELECTED_NEWS}.
-- supportingKeywords length must be exactly 5.
-- trendValidation length must be at least 3.
-- relatedSearches length 6-8.
-- stylingAlternatives length 3-5.
-- mistakesToAvoid length 4-6.
-- Every sourceUrl and evidenceSources URL must exist in source list.
-- Content must be 100% English.
-- Mention Etsy or ZuzuMood naturally in summary/closing for conversion intent.
+- h2Sections length 3-5.
+- each h2 section must include at least one h3 subsection.
+- imageSuggestions length 3-5.
+- Keywords must be natural; avoid keyword stuffing.
+- No AI mentions.
+- Content must be 100% English and US-focused.
+- CTA must include this exact URL: https://www.etsy.com/shop/ZuzuMood
 
 Sources:
 {source_lines}
@@ -351,7 +311,7 @@ Sources:
     )
 
     payload = _extract_json((resp.text or "").strip())
-    payload = enforce_payload_rules(payload, articles, date_str, content_type)
+    payload = enforce_payload_rules(payload, articles, date_str)
     return payload
 
 
@@ -370,9 +330,7 @@ def _looks_non_english(value: str) -> bool:
     return any(marker in lowered for marker in turkish_markers)
 
 
-def enforce_payload_rules(
-    payload: dict[str, Any], articles: list[Article], date_slug: str, content_type: str
-) -> dict[str, Any]:
+def enforce_payload_rules(payload: dict[str, Any], articles: list[Article], date_slug: str) -> dict[str, Any]:
     allowed_urls = {clean_url(a.url) for a in articles}
     canonical_url_map = {_normalize_url_for_match(url): url for url in allowed_urls}
     title_to_url = {
@@ -382,129 +340,124 @@ def enforce_payload_rules(
     }
     fallback_url = clean_url(articles[0].url)
 
-    payload["contentType"] = payload.get("contentType") or content_type
-    payload["summary"] = _truncate_words(payload.get("summary", ""), 22)
-    if _looks_non_english(payload["summary"]):
-        payload["summary"] = "US brides are navigating fast-changing style choices. This guide helps you decide what to wear, why trends are rising, and how to style bridal signals with confidence on ZuzuMood Etsy."
-    if "etsy" not in payload["summary"].lower() and "zuzumood" not in payload["summary"].lower():
-        payload["summary"] = (payload["summary"] + " Discover matching pieces on ZuzuMood Etsy.").strip()
-
-    hook = _truncate_words(payload.get("searchIntentHook", ""), 85)
-    if not hook or _looks_non_english(hook):
-        hook = (
-            "Many US brides searching for modern bridal outfits are not choosing a traditional gown for every wedding moment. "
-            "They are deciding between courthouse looks, second-look party dresses, and photo-ready symbolic pieces that still feel bridal. "
-            "The common mistake is picking an outfit that looks trendy in person but reads casual in photos. "
-            "This guide breaks down what each trend means, who it works for, and how to make a confident styling decision."
-        )
-    payload["searchIntentHook"] = hook
-
     title = str(payload.get("title", "")).strip() or "US Bridal Trend Report"
     if _looks_non_english(title):
-        title = "US Bridal Trends: What to Wear and Why"
-    payload["title"] = title[:60]
+        title = "USA Wedding Gift Trends Brides Are Shopping Right Now"
+    payload["title"] = title[:65]
+
+    meta_description = str(payload.get("metaDescription", "")).strip()
+    if not meta_description or _looks_non_english(meta_description):
+        meta_description = (
+            "Discover USA wedding gift trends for bridal parties, mothers, and wedding mornings with"
+            " elegant, intentional styling guidance from ZuzuMood."
+        )
+    payload["metaDescription"] = _truncate_words(meta_description, 25)[:160]
 
     slug = str(payload.get("slug", "")).strip() or f"{date_slug}-us-bridal-fashion-trends"
     payload["slug"] = _slugify(slug)
 
-    primary_keyword = str(payload.get("primaryKeyword", "")).strip()
-    if not primary_keyword:
-        primary_keyword = f"{date_slug[:4]} bridal second look outfit ideas usa"
-    payload["primaryKeyword"] = primary_keyword
+    payload["tags"] = [
+        "Bridal Gifts",
+        "Bridesmaid Proposal",
+        "Mother of the Bride",
+        "Wedding Gifts",
+    ]
 
-    supporting = payload.get("supportingKeywords", [])
-    if not isinstance(supporting, list):
-        supporting = []
-    supporting = [str(item).strip() for item in supporting if str(item).strip()]
-    while len(supporting) < 5:
-        supporting.append(f"bridal trend idea {len(supporting) + 1} usa")
-    payload["supportingKeywords"] = supporting[:5]
-
-    sections = payload.get("sections", [])
-    if not isinstance(sections, list):
-        raise ValueError("sections must be a list")
-    if len(sections) != SELECTED_NEWS:
-        raise ValueError(f"Gemini did not return exactly {SELECTED_NEWS} sections")
-
-    for section in sections:
-        if not isinstance(section, dict):
-            raise ValueError("section entry must be object")
-        section["heading"] = _truncate_words(section.get("heading", "Trend highlight"), 7)
-        section["observation"] = _truncate_words(section.get("observation", ""), 14)
-        section["meaning"] = _truncate_words(section.get("meaning", ""), 14)
-        section["action"] = _truncate_words(section.get("action", ""), 14)
-        section["goodFor"] = _sanitize_list(section.get("goodFor", []), 2, 4, "Best for")
-        section["notIdealFor"] = _sanitize_list(section.get("notIdealFor", []), 2, 4, "Avoid for")
-        section["bodyEffect"] = _truncate_words(section.get("bodyEffect", ""), 8)
-        section["bestEventFit"] = _truncate_words(section.get("bestEventFit", ""), 8)
-        section["styleIdea"] = _truncate_words(section.get("styleIdea", ""), 10)
-        section["seenOn"] = _truncate_words(section.get("seenOn", ""), 5)
-        section["spottedIn"] = _truncate_words(section.get("spottedIn", ""), 5)
-        section["sourceTitle"] = _truncate_words(section.get("sourceTitle", "Source"), 8)
-        source_url = _resolve_source_url(
-            raw_url=str(section.get("sourceUrl", "")),
-            source_title=str(section.get("sourceTitle", "")),
-            fallback_url=fallback_url,
-            allowed_urls=allowed_urls,
-            canonical_url_map=canonical_url_map,
-            title_to_url=title_to_url,
+    hook = _truncate_words(payload.get("openingHook", ""), 170)
+    if not hook or _looks_non_english(hook):
+        hook = (
+            "Planning a wedding in the United States now means making hundreds of emotional decisions while trying"
+            " to keep every gift meaningful, personal, and visually beautiful. Brides are balancing timeless taste with"
+            " trend-driven inspiration from Pinterest and Etsy, and many feel pressure to choose gifts that photograph well"
+            " and carry real sentiment. The most confident wedding mornings start with intentional details: bridesmaid proposal"
+            " pieces that feel personal, mother-of-the-bride gifts that honor legacy, and bridal keepsakes that look refined"
+            " without feeling overdone. This guide translates current search behavior into clear styling direction so you can"
+            " choose gifts with emotional value and boutique-level polish."
         )
-        section["sourceUrl"] = source_url
+    payload["openingHook"] = hook
 
-    validations = payload.get("trendValidation", [])
-    if not isinstance(validations, list) or len(validations) < 3:
-        raise ValueError("trendValidation must contain at least 3 entries")
-    # Keep the markdown output within the hard word budget by limiting validation rows.
-    # URLs in evidence lines are word-heavy for regex-based word counting.
-    validations = validations[:3]
-    payload["trendValidation"] = validations
+    payload["highVolumeKeywords"] = _sanitize_list(payload.get("highVolumeKeywords", []), 5, 5, "bridal gifts usa")
+    payload["longTailKeywords"] = _sanitize_list(payload.get("longTailKeywords", []), 5, 5, "bridal gift ideas")
+    payload["trendingAngles"] = _sanitize_list(payload.get("trendingAngles", []), 3, 3, "wedding trend")
 
-    for validation in validations:
-        if not isinstance(validation, dict):
-            raise ValueError("trendValidation item must be object")
-        validation["claim"] = _truncate_words(validation.get("claim", "Trend signal"), 8)
-        checks = validation.get("checksPassed", [])
-        if not isinstance(checks, list) or len(checks) < 2:
-            raise ValueError("each trendValidation item must pass at least 2 checks")
-        validation["checksPassed"] = [
-            _truncate_words(item, 4) for item in checks if _truncate_words(item, 4)
-        ][:3]
-        evidence = validation.get("evidenceSources", [])
-        if not isinstance(evidence, list) or not evidence:
-            raise ValueError("trendValidation item must include evidenceSources")
-        cleaned_evidence: list[str] = []
-        for url in evidence:
-            matched_url = _resolve_source_url(
-                raw_url=str(url),
-                source_title="",
-                fallback_url="",
-                allowed_urls=allowed_urls,
-                canonical_url_map=canonical_url_map,
-                title_to_url=title_to_url,
+    sections = payload.get("h2Sections", [])
+    if not isinstance(sections, list):
+        sections = []
+    if len(sections) < 3:
+        raise ValueError("h2Sections must contain at least 3 entries")
+    payload["h2Sections"] = sections[:5]
+
+    for section in payload["h2Sections"]:
+        if not isinstance(section, dict):
+            continue
+        section["heading"] = _truncate_words(section.get("heading", "Wedding Trend Insight"), 10)
+        section["content"] = _truncate_words(section.get("content", ""), 140)
+        h3 = section.get("h3Subsections", [])
+        if not isinstance(h3, list) or not h3:
+            h3 = [{"title": "How to apply this trend", "content": "Use this direction to build a meaningful wedding gift story with minimalist, premium details."}]
+        cleaned_h3: list[dict[str, str]] = []
+        for item in h3[:3]:
+            if not isinstance(item, dict):
+                continue
+            cleaned_h3.append(
+                {
+                    "title": _truncate_words(item.get("title", "Wedding styling note"), 8),
+                    "content": _truncate_words(item.get("content", ""), 80),
+                }
             )
-            if matched_url:
-                cleaned_evidence.append(matched_url)
+        if not cleaned_h3:
+            cleaned_h3 = [{"title": "Wedding styling note", "content": "Choose details that feel emotionally intentional and visually clean."}]
+        section["h3Subsections"] = cleaned_h3
 
-        cleaned_evidence = list(dict.fromkeys(cleaned_evidence))
-        if not cleaned_evidence:
-            cleaned_evidence = [fallback_url]
-        validation["evidenceSources"] = cleaned_evidence[:1]
+    payload["finalThoughts"] = _truncate_words(payload.get("finalThoughts", ""), 90)
+    if not payload["finalThoughts"]:
+        payload["finalThoughts"] = (
+            "Great wedding gifting is not about buying more, it is about choosing with purpose. "
+            "When every piece reflects emotion and intention, the celebration feels elevated, personal, and unforgettable."
+        )
 
-    payload["relatedSearches"] = _sanitize_list(payload.get("relatedSearches", []), 6, 8, "bridal search")
-    payload["stylingAlternatives"] = _sanitize_list(payload.get("stylingAlternatives", []), 3, 5, "styling alternative")
-    payload["mistakesToAvoid"] = _sanitize_list(payload.get("mistakesToAvoid", []), 4, 6, "bridal mistake")
+    call_to_action = str(payload.get("callToAction", "")).strip()
+    if "https://www.etsy.com/shop/ZuzuMood" not in call_to_action:
+        call_to_action = (
+            "Explore the ZuzuMood Etsy collection for minimalist wedding gifts crafted for intentional, meaningful celebration: "
+            "https://www.etsy.com/shop/ZuzuMood"
+        )
+    payload["callToAction"] = call_to_action
 
-    seo = payload.get("seo", {})
-    if not isinstance(seo, dict):
-        seo = {}
-    meta_title = str(seo.get("metaTitle", payload["title"])).strip()
-    meta_description = str(seo.get("metaDescription", payload["summary"])).strip()
-    if "zuzumood" not in meta_title.lower() and "etsy" not in meta_title.lower():
-        meta_title = f"{meta_title} | ZuzuMood"[:60]
-    if "zuzumood" not in meta_description.lower() and "etsy" not in meta_description.lower():
-        meta_description = f"{meta_description} Explore ZuzuMood Etsy."[:155]
-    payload["seo"] = {"metaTitle": meta_title[:60], "metaDescription": meta_description[:155]}
-    payload["closing"] = _truncate_words(payload.get("closing", ""), 45)
+    payload["pinterestPinDescription"] = _truncate_words(payload.get("pinterestPinDescription", ""), 60)
+    if not payload["pinterestPinDescription"]:
+        payload["pinterestPinDescription"] = (
+            "USA brides are choosing intentional bridal gifts with minimalist luxury styling. "
+            "Save this guide for bridesmaid proposals, mother-of-the-bride moments, and meaningful wedding morning details."
+        )
+
+    tiktok_hook = _truncate_words(payload.get("tiktokHook", ""), 14)
+    if not tiktok_hook:
+        tiktok_hook = "Your wedding gifts should feel as intentional as your vows."
+    payload["tiktokHook"] = tiktok_hook
+
+    image_suggestions = payload.get("imageSuggestions", [])
+    if not isinstance(image_suggestions, list):
+        image_suggestions = []
+    cleaned_images: list[dict[str, str]] = []
+    for suggestion in image_suggestions[:5]:
+        if not isinstance(suggestion, dict):
+            continue
+        cleaned_images.append(
+            {
+                "description": _truncate_words(suggestion.get("description", "Wedding gift flatlay with premium minimalist styling"), 20),
+                "altText": _truncate_words(suggestion.get("altText", "USA bridal gifts wedding morning gift ideas"), 20),
+            }
+        )
+    while len(cleaned_images) < 3:
+        idx = len(cleaned_images) + 1
+        cleaned_images.append(
+            {
+                "description": f"Minimalist bridal gifting visual concept {idx}",
+                "altText": f"USA bridal gifts trend inspired wedding image {idx}",
+            }
+        )
+    payload["imageSuggestions"] = cleaned_images[:5]
 
     return payload
 
@@ -531,114 +484,86 @@ def generate_cover_image(client: genai.Client, prompt: str, output_path: Path) -
 
 def to_markdown(payload: dict[str, Any], date_iso: str, image_path: str) -> str:
     title = str(payload.get("title", "")).strip()
-    summary = str(payload.get("summary", "")).strip()
-    hook = str(payload.get("searchIntentHook", "")).strip()
-    seo = payload.get("seo", {})
-    sections = payload.get("sections", [])
-    validations = payload.get("trendValidation", [])
+    meta_description = str(payload.get("metaDescription", "")).strip()
+    opening_hook = str(payload.get("openingHook", "")).strip()
+    sections = payload.get("h2Sections", [])
 
     lines = [
         "---",
         f"title: {json.dumps(title, ensure_ascii=False)}",
+        f"meta_description: {json.dumps(meta_description, ensure_ascii=False)}",
+        f"slug: {json.dumps(str(payload.get('slug', '')), ensure_ascii=False)}",
         f"date: {date_iso}",
-        f"description: {json.dumps(summary, ensure_ascii=False)}",
+        f"tags: {json.dumps(payload.get('tags', []), ensure_ascii=False)}",
+        f"description: {json.dumps(meta_description, ensure_ascii=False)}",
         f"image: {image_path}",
-        f"metaTitle: {json.dumps(seo.get('metaTitle', title), ensure_ascii=False)}",
-        f"metaDescription: {json.dumps(seo.get('metaDescription', summary), ensure_ascii=False)}",
-        f"contentType: {json.dumps(payload.get('contentType', ''), ensure_ascii=False)}",
-        f"primaryKeyword: {json.dumps(payload.get('primaryKeyword', ''), ensure_ascii=False)}",
-        f"supportingKeywords: {json.dumps(payload.get('supportingKeywords', []), ensure_ascii=False)}",
+        f"highVolumeKeywords: {json.dumps(payload.get('highVolumeKeywords', []), ensure_ascii=False)}",
+        f"longTailKeywords: {json.dumps(payload.get('longTailKeywords', []), ensure_ascii=False)}",
+        f"trendingAngles: {json.dumps(payload.get('trendingAngles', []), ensure_ascii=False)}",
         "locale: en-US",
         "region: us",
-        "category: bridal-fashion-trends",
+        "category: wedding-gift-trends",
         "---",
         "",
         f"# {title}",
         "",
-        summary,
-        "",
-        "## Search Intent Hook",
-        "",
-        hook,
-        "",
-        "## Trend Validation Snapshot",
+        opening_hook,
         "",
     ]
 
-    for validation in validations:
-        claim = str(validation.get("claim", "Trend signal")).strip()
-        checks = validation.get("checksPassed", [])
-        checks_text = ", ".join(str(item).strip() for item in checks if str(item).strip())
-        evidence_links = " | ".join(f"[{url}]({url})" for url in validation.get("evidenceSources", []))
+    for section in sections:
         lines.extend(
             [
-                f"- **{claim}** — checks passed: {checks_text}",
-                f"  - evidence: {evidence_links}",
-            ]
-        )
-
-    lines.extend(["", "## Bridal Decision Trend Breakdown", ""])
-
-    for idx, section in enumerate(sections, start=1):
-        good_for = ", ".join(section.get("goodFor", []))
-        not_ideal = ", ".join(section.get("notIdealFor", []))
-        lines.extend(
-            [
-                f"### {idx}. {str(section.get('heading', '')).strip()}",
+                f"## {str(section.get('heading', '')).strip()}",
                 "",
-                f"**Observation:** {str(section.get('observation', '')).strip()}",
-                "",
-                f"**Meaning:** {str(section.get('meaning', '')).strip()}",
-                "",
-                f"**Action:** {str(section.get('action', '')).strip()}",
-                "",
-                f"**Good for:** {good_for}",
-                "",
-                f"**Not ideal for:** {not_ideal}",
-                "",
-                f"**Body effect:** {str(section.get('bodyEffect', '')).strip()}",
-                "",
-                f"**Best event fit:** {str(section.get('bestEventFit', '')).strip()}",
-                "",
-                f"**Style idea:** {str(section.get('styleIdea', '')).strip()}",
-                "",
-                f"Seen on: {str(section.get('seenOn', '')).strip()}",
-                "",
-                f"Spotted in: {str(section.get('spottedIn', '')).strip()}",
-                "",
-                f"Source: [{str(section.get('sourceTitle', 'Source')).strip()}]({str(section.get('sourceUrl', '#')).strip()})",
+                str(section.get("content", "")).strip(),
                 "",
             ]
         )
+        for subsection in section.get("h3Subsections", []):
+            lines.extend(
+                [
+                    f"### {str(subsection.get('title', '')).strip()}",
+                    "",
+                    str(subsection.get("content", "")).strip(),
+                    "",
+                ]
+            )
 
     lines.extend(
         [
-            "## Primary and Supporting Searches",
+            "---",
             "",
-            f"- Primary: **{payload.get('primaryKeyword', '')}**",
-            *[f"- Supporting: {kw}" for kw in payload.get("supportingKeywords", [])],
+            "## Image Suggestions",
             "",
-            "## Related Searches Brides Also Use",
-            "",
-            *[f"- {item}" for item in payload.get("relatedSearches", [])],
-            "",
-            "## Styling Alternatives",
-            "",
-            *[f"- {item}" for item in payload.get("stylingAlternatives", [])],
-            "",
-            "## Mistakes Brides Make",
-            "",
-            *[f"- {item}" for item in payload.get("mistakesToAvoid", [])],
-            "",
-            "## Who Should Wear This and When",
-            "",
-            str(payload.get("closing", "")).strip(),
+            *[
+                f"{idx}. {item.get('description', '').strip()}  \nALT Text: \"{item.get('altText', '').strip()}\""
+                for idx, item in enumerate(payload.get("imageSuggestions", []), start=1)
+            ],
             "",
             "---",
             "",
-            "If you want trend-aligned bridal pieces, browse ZuzuMood on Etsy: https://www.etsy.com/shop/ZuzuMood",
+            "## Final Thoughts",
             "",
-            "This post is generated daily to track what women in the US are searching and saving lately.",
+            str(payload.get("finalThoughts", "")).strip(),
+            "",
+            "---",
+            "",
+            "## Call to Action",
+            "",
+            str(payload.get("callToAction", "")).strip(),
+            "",
+            "---",
+            "",
+            "## Pinterest Pin Description",
+            "",
+            str(payload.get("pinterestPinDescription", "")).strip(),
+            "",
+            "---",
+            "",
+            "## TikTok Hook",
+            "",
+            str(payload.get("tiktokHook", "")).strip(),
         ]
     )
 
@@ -718,7 +643,7 @@ def main() -> None:
     update_index(
         slug=slug,
         title=str(payload.get("title", slug)),
-        summary=str(payload.get("summary", "")),
+        summary=str(payload.get("metaDescription", "")),
         date_iso=date_iso,
         image_path=image_rel,
     )
