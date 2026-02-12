@@ -252,47 +252,60 @@ def build_blog_payload(client: genai.Client, articles: list[Article], date_str: 
 
     prompt = f"""
 SYSTEM ROLE
-You are an autonomous SEO Wedding Content Strategist for ZuzuMood.
+You are the ZUZUMOOD GLOBAL CONTENT STRATEGIST, a Senior Marketing Director & Copywriter for ZuzuMood.
 
-Your mission:
-Generate high-traffic, conversion-focused blog posts for the USA wedding market and publish-ready markdown content for GitHub automation.
+IDENTITY & LANGUAGE
+- Write in STRICTLY ENGLISH ONLY.
+- Use high-end American English.
+- Voice: sophisticated, minimalist, boutique-style.
 
-Primary goal:
-Increase organic Google traffic and convert readers into Etsy customers.
+CORE MISSION
+Generate high-traffic, conversion-focused blog posts for the US wedding market and publish-ready markdown content for GitHub automation.
+Primary goal: increase organic Google traffic and convert readers into Etsy customers.
 
-Target audience:
-USA brides, bridesmaids, maids of honor, mothers of the bride (age 23–40).
+TARGET AUDIENCE
+US brides, bridesmaids, maids of honor, and mothers of the bride (age 23-40).
 
-Language:
-American English only.
-
-STEP 1 — DAILY LIVE RESEARCH (MANDATORY)
+STEP 1 — TREND & NICHE RESEARCH (MANDATORY)
 Before writing anything:
-1) Analyze Google Trends style signals from sources for USA only (last 30 days + rising intent) and extract:
-- 5 rising keywords
-- 5 breakout queries
-- 3 seasonal angles
-
-2) SERP intent analysis for top 3 trending keywords and classify intent mix.
-ZuzuMood target: Commercial + Informational hybrid intent.
-
-3) Topic selection rule:
-Select ONE topic with rising momentum, category fit, and commercial potential.
-Avoid duplicates with these existing slugs:
+1) Analyze US Etsy + Pinterest demand signals 6-8 weeks ahead and detect special-day windows.
+   Focus on upcoming peaks such as Mother's Day, wedding season, bridal shower season, bachelorette season, and wedding morning gifting.
+2) Extract:
+   - 5 rising keywords
+   - 5 breakout queries
+   - 3 seasonal/special-day angles
+3) Run SERP intent analysis for top 3 keywords.
+   ZuzuMood target: hybrid Commercial + Informational intent.
+4) Select ONE topic with rising momentum, strong niche fit, and conversion potential.
+   Niche direction examples: 90s Vintage, Retro Varsity, Minimalist Bridal.
+5) Apply the ZuzuMood Filter:
+   reinterpret every trend in a Quiet Luxury aesthetic; simplify anything loud to fit a minimalist premium identity.
+6) Avoid duplicate topics with these existing slugs:
 {existing_slug_lines}
 
-STEP 2 — SEO STRATEGY REQUIREMENTS
+STEP 2 — SEO & BUYER-PSYCHOLOGY STRATEGY
 - 1500-2200 words.
 - Use primary keyword in title, first 100 words, one H2, and meta description.
-- Include at least 5 long-tail variations.
-- Include FAQ section with 3 SEO questions.
+- Include at least 5 long-tail variations (high-volume / low-competition intent).
+- Naturally use buyer-psychology words where relevant: sentimental, heirloom, timeless, bespoke, keepsake.
+- Include FAQ section with exactly 3 SEO questions.
 - Include list section with at least 10 specific ideas.
-- Short scannable paragraphs.
+- Keep paragraphs short and scannable.
 - Never mention AI.
 - Integrate ZuzuMood naturally, not salesy.
-- Mention minimalist design, clean typography, premium aesthetic, and emotional keepsake value.
-- Include this philosophy naturally once: “The Universe Always Says Yes”.
-- CTA must include exact URL: https://www.etsy.com/shop/ZuzuMood
+- Highlight minimalist design, clean typography, premium fabrics/aesthetic, and emotional keepsake value.
+- Include this philosophy naturally once: "The Universe Always Says Yes".
+- Every post must end with a direct Etsy CTA link: https://www.etsy.com/shop/ZuzuMood
+
+STEP 3 — CONTENT STRUCTURE REQUIREMENTS
+- Emphasize emotional gifting bonds (e.g., mother-daughter, bride-bridesmaid).
+- Frame ZuzuMood products as modern classics.
+- Add boutique photography direction using natural light, wooden textures, and premium mockups.
+- Ensure image ALT texts contain natural SEO phrases.
+
+STEP 4 — SOCIAL MEDIA ACCELERATORS
+- 1 Pinterest description optimized for saves + clicks.
+- 3 distinct TikTok/Reels hooks, each attention-grabbing and under 15 words.
 
 Return ONLY strict JSON with this schema:
 {{
@@ -301,6 +314,8 @@ Return ONLY strict JSON with this schema:
   "slug": "seo-friendly-slug",
   "primaryKeyword": "main keyword",
   "secondaryKeywords": ["kw1", "kw2", "kw3", "kw4", "kw5"],
+  "specialDayFocus": "upcoming event/season driving demand",
+  "quietLuxuryAngle": "how loud trends are simplified for ZuzuMood",
   "intro": "Hook paragraph with keyword in first 100 words",
   "whyTrendRising": "Trend analysis with USA context",
   "usaTrendingNow": "Optional freshness section if momentum is high",
@@ -320,7 +335,7 @@ Return ONLY strict JSON with this schema:
   "finalThoughts": "Closing paragraph",
   "callToAction": "Include exact Etsy URL",
   "pinterestPinDescription": "2-3 SEO-optimized sentences",
-  "tiktokHook": "Under 15 words",
+  "tiktokHooks": ["hook 1", "hook 2", "hook 3"],
   "heroPrompt": "English image prompt, no text in image"
 }}
 
@@ -328,6 +343,7 @@ Critical constraints:
 - ideas length >= 10
 - faq length exactly 3
 - imageSuggestions length 3-5
+- tiktokHooks length exactly 3
 - output must be 100% American English
 
 Sources:
@@ -465,7 +481,36 @@ def enforce_payload_rules(payload: dict[str, Any], articles: list[Article], date
     payload["pinterestPinDescription"] = _truncate_words(str(payload.get("pinterestPinDescription", "")).strip(), 70) or (
         "Looking for bridesmaid proposal gifts and wedding keepsakes that feel premium and personal? Save this USA-focused guide for minimalist, meaningful ideas brides actually buy."
     )
-    payload["tiktokHook"] = _truncate_words(str(payload.get("tiktokHook", "")).strip(), 14) or "The bridesmaid gift trend every USA bride is saving right now."
+
+    special_day_focus = _truncate_words(str(payload.get("specialDayFocus", "")).strip(), 22)
+    if not special_day_focus:
+        special_day_focus = "Mother's Day gifting window and early wedding season shopping"
+    payload["specialDayFocus"] = special_day_focus
+
+    quiet_luxury_angle = _truncate_words(str(payload.get("quietLuxuryAngle", "")).strip(), 45)
+    if not quiet_luxury_angle:
+        quiet_luxury_angle = (
+            "Translate loud trend motifs into clean typography, restrained palettes, and timeless premium silhouettes."
+        )
+    payload["quietLuxuryAngle"] = quiet_luxury_angle
+
+    raw_hooks = payload.get("tiktokHooks")
+    if not isinstance(raw_hooks, list):
+        legacy_hook = str(payload.get("tiktokHook", "")).strip()
+        raw_hooks = [legacy_hook] if legacy_hook else []
+
+    cleaned_hooks = [_truncate_words(str(h).strip(), 14) for h in raw_hooks if str(h).strip()]
+    cleaned_hooks = [hook for hook in cleaned_hooks if hook]
+    fallback_hooks = [
+        "The bridesmaid keepsake trend US brides keep sharing.",
+        "Quiet luxury wedding gifts bridesmaids actually keep forever.",
+        "Minimal bridal keepsakes that feel bespoke in every photo.",
+    ]
+    for fallback in fallback_hooks:
+        if len(cleaned_hooks) >= 3:
+            break
+        cleaned_hooks.append(fallback)
+    payload["tiktokHooks"] = cleaned_hooks[:3]
 
     image_suggestions = payload.get("imageSuggestions", [])
     cleaned_images: list[dict[str, str]] = []
@@ -633,11 +678,23 @@ def to_markdown(payload: dict[str, Any], date_iso: str, image_path: str) -> str:
             "",
             "---",
             "",
-            "## TikTok Hook",
+            "## Special-Day Focus",
             "",
-            str(payload.get("tiktokHook", "")).strip(),
+            str(payload.get("specialDayFocus", "")).strip(),
+            "",
+            "## Quiet Luxury Angle",
+            "",
+            str(payload.get("quietLuxuryAngle", "")).strip(),
+            "",
+            "---",
+            "",
+            "## TikTok/Reels Hooks",
+            "",
         ]
     )
+
+    for idx, hook in enumerate(payload.get("tiktokHooks", []), start=1):
+        lines.append(f"{idx}. {str(hook).strip()}")
 
     markdown = "\n".join(lines).strip() + "\n"
     word_count = len(re.findall(r"\b\w+\b", markdown))
