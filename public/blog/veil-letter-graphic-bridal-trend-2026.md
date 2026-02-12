@@ -66,7 +66,7 @@ Explore the ZuzuMood Etsy shop and claim your Veil-Letter piece before this look
 
 ZuzuMood'un orijinal tasarımını herkesten önce keşfedin. #GelinlikStili #DüğünSabahı #BekarlığaVedaKıyafetleri #SessizLüks
 
-![Etna Sans Serif (12)](/blog/Etna%20Sans%20Serif%20(12).png)
+<img src="/blog/Etna%20Sans%20Serif%20(12).png" alt="" />
 
 ## TikTok Hook
 
