@@ -64,7 +64,11 @@ Explore the ZuzuMood Etsy shop and claim your Veil-Letter piece before this look
 
 ## Pinterest Caption
 
+ZuzuMood'un orijinal tasarımını herkesten önce keşfedin. #GelinlikStili #DüğünSabahı #BekarlığaVedaKıyafetleri #SessizLüks
+
 2026 brides are trading loud bridal graphics for the Veil-Letter era ✨ A minimalist initial + delicate veil illustration = the chicest wedding-morning look. Discover the ZuzuMood original before everyone else does. #BridalStyle #WeddingMorning #BacheloretteOutfit #QuietLuxury
+
+![](/blog/Etna%20Sans%20Serif%20(12).png)
 
 ## TikTok Hook
 
