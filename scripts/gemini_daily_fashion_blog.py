@@ -37,9 +37,9 @@ TEXT_MODEL = "gemini-2.5-flash"
 IMAGE_MODEL = "gemini-2.5-flash-image"
 MAX_NEWS = 24
 SELECTED_NEWS = 10
-MIN_WORDS = 800
-MAX_WORDS = 1400
-HARD_MAX_WORDS = MAX_WORDS + 2000
+MIN_WORDS = 1500
+MAX_WORDS = 2200
+HARD_MAX_WORDS = MAX_WORDS + 400
 
 CONTENT_TYPES = [
     "Trend report",
@@ -53,16 +53,16 @@ CONTENT_TYPES = [
 ]
 
 SEARCH_QUERIES = [
-    "bridal fashion trend United States",
-    "wedding guest dresses trend US",
-    "bridal shower outfit ideas USA",
-    "bachelorette style trend tiktok",
-    "pinterest bridal trend United States",
-    "celebrity bridal look trend",
-    "fashion week wedding style US",
-    "rehearsal dinner outfit ideas USA",
-    "hamptons wedding guest fashion",
-    "new york bachelorette outfit trend",
+    "bridesmaid proposal gifts USA",
+    "bridal gifts ideas United States",
+    "mother of the bride gift USA",
+    "wedding morning gifts for bride",
+    "maid of honor gift trend USA",
+    "bridal shower gift ideas 2026",
+    "personalized wedding gifts USA",
+    "etsy bridesmaid proposal gifts",
+    "minimalist wedding gift ideas",
+    "luxury wedding keepsake gifts",
 ]
 
 
@@ -216,6 +216,25 @@ def _pick_content_type(date_slug: str) -> str:
     return CONTENT_TYPES[ordinal % len(CONTENT_TYPES)]
 
 
+def _existing_slugs() -> set[str]:
+    slugs: set[str] = set()
+    if INDEX_PATH.exists():
+        try:
+            entries = json.loads(INDEX_PATH.read_text(encoding="utf-8"))
+            if isinstance(entries, list):
+                for entry in entries:
+                    if isinstance(entry, dict):
+                        slug = str(entry.get("slug", "")).strip()
+                        if slug:
+                            slugs.add(slug)
+        except Exception:
+            pass
+
+    for md_file in BLOG_DIR.glob("*.md"):
+        slugs.add(md_file.stem)
+    return slugs
+
+
 def _truncate_words(text: str, max_words: int) -> str:
     cleaned = re.sub(r"\s+", " ", str(text or "")).strip()
     if max_words <= 0 or not cleaned:
@@ -228,77 +247,88 @@ def _truncate_words(text: str, max_words: int) -> str:
 
 def build_blog_payload(client: genai.Client, articles: list[Article], date_str: str) -> dict[str, Any]:
     source_lines = "\n".join([f"- {a.title} | {a.source} | {a.url}" for a in articles])
+    existing_slugs = sorted(_existing_slugs())[-80:]
+    existing_slug_lines = "\n".join([f"- {slug}" for slug in existing_slugs]) or "- none"
 
     prompt = f"""
-SYSTEM ROLE:
-You are an autonomous SEO Wedding Content Strategist for ZuzuMood (USA wedding market).
-You research, analyze trends, and generate a fully optimized blog post ready for GitHub markdown publishing.
+SYSTEM ROLE
+You are an autonomous SEO Wedding Content Strategist for ZuzuMood.
 
-Date: {date_str}
-STEP 1: Research Phase (Mandatory)
-- Use API-based live research from the provided source list to analyze:
-  - Google Trends (USA region)
-  - Etsy USA search trends
-  - Pinterest wedding trends
-  - Long-tail keyword variations
-- Primary categories to prioritize:
-  - Bridal Gifts
-  - Bridesmaid Proposal Gifts
-  - Mother of the Bride Gifts
-  - Wedding Morning Gifts
-- Extract exactly:
-  - 5 high-volume keywords
-  - 5 long-tail keywords
-  - 3 trending angles
+Your mission:
+Generate high-traffic, conversion-focused blog posts for the USA wedding market and publish-ready markdown content for GitHub automation.
 
-STEP 2: Content Creation Rules
-- Language: American English
-- Target Market: United States
-- Tone: Luxury wedding consultant, emotionally intelligent, boutique-style
+Primary goal:
+Increase organic Google traffic and convert readers into Etsy customers.
+
+Target audience:
+USA brides, bridesmaids, maids of honor, mothers of the bride (age 23–40).
+
+Language:
+American English only.
+
+STEP 1 — DAILY LIVE RESEARCH (MANDATORY)
+Before writing anything:
+1) Analyze Google Trends style signals from sources for USA only (last 30 days + rising intent) and extract:
+- 5 rising keywords
+- 5 breakout queries
+- 3 seasonal angles
+
+2) SERP intent analysis for top 3 trending keywords and classify intent mix.
+ZuzuMood target: Commercial + Informational hybrid intent.
+
+3) Topic selection rule:
+Select ONE topic with rising momentum, category fit, and commercial potential.
+Avoid duplicates with these existing slugs:
+{existing_slug_lines}
+
+STEP 2 — SEO STRATEGY REQUIREMENTS
+- 1500-2200 words.
+- Use primary keyword in title, first 100 words, one H2, and meta description.
+- Include at least 5 long-tail variations.
+- Include FAQ section with 3 SEO questions.
+- Include list section with at least 10 specific ideas.
+- Short scannable paragraphs.
 - Never mention AI.
-- Subtly integrate brand philosophy: "The Universe Always Says Yes" to intentional love and meaningful preparation.
-- Naturally integrate ZuzuMood minimalist design, clean typography, premium aesthetic.
+- Integrate ZuzuMood naturally, not salesy.
+- Mention minimalist design, clean typography, premium aesthetic, and emotional keepsake value.
+- Include this philosophy naturally once: “The Universe Always Says Yes”.
+- CTA must include exact URL: https://www.etsy.com/shop/ZuzuMood
 
-STEP 3: Return ONLY strict JSON with this schema:
+Return ONLY strict JSON with this schema:
 {{
-  "title": "SEO optimized blog title, max 65 chars",
-  "metaDescription": "150-160 chars",
-  "slug": "seo-friendly-url-slug",
-  "tags": ["Bridal Gifts", "Bridesmaid Proposal", "Mother of the Bride", "Wedding Gifts"],
-  "openingHook": "150-200 words emotional hook paragraph",
-  "highVolumeKeywords": ["5 keywords"],
-  "longTailKeywords": ["5 keywords"],
-  "trendingAngles": ["3 trend angles"],
-  "h2Sections": [
-    {{
-      "heading": "H2 heading",
-      "content": "section content",
-      "h3Subsections": [
-        {{"title": "H3 heading", "content": "subsection content"}}
-      ]
-    }}
+  "title": "<65 chars, include primary keyword and emotional/benefit trigger>",
+  "metaDescription": "150-160 chars with primary keyword",
+  "slug": "seo-friendly-slug",
+  "primaryKeyword": "main keyword",
+  "secondaryKeywords": ["kw1", "kw2", "kw3", "kw4", "kw5"],
+  "intro": "Hook paragraph with keyword in first 100 words",
+  "whyTrendRising": "Trend analysis with USA context",
+  "usaTrendingNow": "Optional freshness section if momentum is high",
+  "chooseGuide": "How to choose the perfect primary keyword item",
+  "ideasHeading": "Numbered list section heading",
+  "ideas": [
+    {{"title": "idea title", "explanation": "mini explanation"}}
   ],
-  "finalThoughts": "emotional closing paragraph",
-  "callToAction": "encourage reader to explore Etsy shop",
-  "pinterestPinDescription": "2-3 SEO optimized sentences",
-  "tiktokHook": "1 emotionally powerful sentence under 15 words",
-  "heroPrompt": "English image prompt, no text in image",
+  "budgetGuide": "Optional budget guidance",
+  "luxuryVsMinimalist": "Comparison section with subtle ZuzuMood positioning",
+  "faq": [
+    {{"question": "SEO question", "answer": "answer"}}
+  ],
   "imageSuggestions": [
-    {{
-      "description": "image description",
-      "altText": "high-volume USA wedding keyword optimized alt text"
-    }}
-  ]
+    {{"description": "image description", "altText": "SEO keyword phrase"}}
+  ],
+  "finalThoughts": "Closing paragraph",
+  "callToAction": "Include exact Etsy URL",
+  "pinterestPinDescription": "2-3 SEO-optimized sentences",
+  "tiktokHook": "Under 15 words",
+  "heroPrompt": "English image prompt, no text in image"
 }}
 
 Critical constraints:
-- h2Sections length 3-5.
-- each h2 section must include at least one h3 subsection.
-- imageSuggestions length 3-5.
-- Keywords must be natural; avoid keyword stuffing.
-- No AI mentions.
-- Content must be 100% English and US-focused.
-- CTA must include this exact URL: https://www.etsy.com/shop/ZuzuMood
+- ideas length >= 10
+- faq length exactly 3
+- imageSuggestions length 3-5
+- output must be 100% American English
 
 Sources:
 {source_lines}
@@ -307,7 +337,7 @@ Sources:
     resp = client.models.generate_content(
         model=TEXT_MODEL,
         contents=prompt,
-        config=types.GenerateContentConfig(temperature=0.45),
+        config=types.GenerateContentConfig(temperature=0.4),
     )
 
     payload = _extract_json((resp.text or "").strip())
@@ -331,135 +361,136 @@ def _looks_non_english(value: str) -> bool:
 
 
 def enforce_payload_rules(payload: dict[str, Any], articles: list[Article], date_slug: str) -> dict[str, Any]:
-    allowed_urls = {clean_url(a.url) for a in articles}
-    canonical_url_map = {_normalize_url_for_match(url): url for url in allowed_urls}
-    title_to_url = {
-        _normalize_title_for_match(a.title): clean_url(a.url)
-        for a in articles
-        if _normalize_title_for_match(a.title)
-    }
-    fallback_url = clean_url(articles[0].url)
+    existing_slugs = _existing_slugs()
 
-    title = str(payload.get("title", "")).strip() or "US Bridal Trend Report"
+    title = str(payload.get("title", "")).strip() or "15 Best Bridesmaid Proposal Gifts for 2026"
     if _looks_non_english(title):
-        title = "USA Wedding Gift Trends Brides Are Shopping Right Now"
+        title = "15 Best Bridesmaid Proposal Gifts for 2026"
     payload["title"] = title[:65]
+
+    primary_keyword = str(payload.get("primaryKeyword", "")).strip() or "bridesmaid proposal gifts"
+    if _looks_non_english(primary_keyword):
+        primary_keyword = "bridesmaid proposal gifts"
+    payload["primaryKeyword"] = primary_keyword
 
     meta_description = str(payload.get("metaDescription", "")).strip()
     if not meta_description or _looks_non_english(meta_description):
         meta_description = (
-            "Discover USA wedding gift trends for bridal parties, mothers, and wedding mornings with"
-            " elegant, intentional styling guidance from ZuzuMood."
+            f"Discover {primary_keyword} ideas for USA weddings with minimalist, meaningful picks for bridesmaids, mothers, and wedding morning moments."
         )
-    payload["metaDescription"] = _truncate_words(meta_description, 25)[:160]
+    payload["metaDescription"] = _truncate_words(meta_description, 26)[:160]
 
-    slug = str(payload.get("slug", "")).strip() or f"{date_slug}-us-bridal-fashion-trends"
-    payload["slug"] = _slugify(slug)
+    slug = _slugify(str(payload.get("slug", "")).strip() or f"{date_slug}-{primary_keyword}")
+    if slug in existing_slugs:
+        slug = f"{slug}-{date_slug}"
+    payload["slug"] = slug
 
-    payload["tags"] = [
-        "Bridal Gifts",
-        "Bridesmaid Proposal",
-        "Mother of the Bride",
-        "Wedding Gifts",
-    ]
+    secondary = payload.get("secondaryKeywords", [])
+    payload["secondaryKeywords"] = _sanitize_list(secondary, 5, 7, "wedding gift ideas")[:5]
 
-    hook = _truncate_words(payload.get("openingHook", ""), 170)
-    if not hook or _looks_non_english(hook):
-        hook = (
-            "Planning a wedding in the United States now means making hundreds of emotional decisions while trying"
-            " to keep every gift meaningful, personal, and visually beautiful. Brides are balancing timeless taste with"
-            " trend-driven inspiration from Pinterest and Etsy, and many feel pressure to choose gifts that photograph well"
-            " and carry real sentiment. The most confident wedding mornings start with intentional details: bridesmaid proposal"
-            " pieces that feel personal, mother-of-the-bride gifts that honor legacy, and bridal keepsakes that look refined"
-            " without feeling overdone. This guide translates current search behavior into clear styling direction so you can"
-            " choose gifts with emotional value and boutique-level polish."
+    intro = _truncate_words(str(payload.get("intro", "")).strip(), 220)
+    if not intro or _looks_non_english(intro):
+        intro = (
+            f"If you are searching for {primary_keyword}, you are not alone. Across the USA, brides are choosing gifts that feel personal, premium, and photo-ready while still practical for real wedding timelines. "
+            "This guide breaks down what is trending, what converts into meaningful keepsakes, and how to choose pieces that bridesmaids and family members will actually use long after the wedding day."
         )
-    payload["openingHook"] = hook
+    payload["intro"] = intro
 
-    payload["highVolumeKeywords"] = _sanitize_list(payload.get("highVolumeKeywords", []), 5, 5, "bridal gifts usa")
-    payload["longTailKeywords"] = _sanitize_list(payload.get("longTailKeywords", []), 5, 5, "bridal gift ideas")
-    payload["trendingAngles"] = _sanitize_list(payload.get("trendingAngles", []), 3, 3, "wedding trend")
+    payload["whyTrendRising"] = _truncate_words(str(payload.get("whyTrendRising", "")).strip(), 260) or (
+        "Search demand is climbing because brides want personalized gifts that feel elevated without looking overdesigned. Etsy-style customization, social media unboxing moments, and wedding weekend content culture are pushing this category forward in the U.S. market."
+    )
 
-    sections = payload.get("h2Sections", [])
-    if not isinstance(sections, list):
-        sections = []
-    if len(sections) < 3:
-        raise ValueError("h2Sections must contain at least 3 entries")
-    payload["h2Sections"] = sections[:5]
+    payload["usaTrendingNow"] = _truncate_words(str(payload.get("usaTrendingNow", "")).strip(), 140)
+    payload["chooseGuide"] = _truncate_words(str(payload.get("chooseGuide", "")).strip(), 240) or (
+        "Choose by recipient role, event timing, and repeat-use value. Prioritize clean typography, neutral palettes, and customization options that make each gift look intentional in photos and feel genuinely personal in real life."
+    )
 
-    for section in payload["h2Sections"]:
-        if not isinstance(section, dict):
-            continue
-        section["heading"] = _truncate_words(section.get("heading", "Wedding Trend Insight"), 10)
-        section["content"] = _truncate_words(section.get("content", ""), 140)
-        h3 = section.get("h3Subsections", [])
-        if not isinstance(h3, list) or not h3:
-            h3 = [{"title": "How to apply this trend", "content": "Use this direction to build a meaningful wedding gift story with minimalist, premium details."}]
-        cleaned_h3: list[dict[str, str]] = []
-        for item in h3[:3]:
+    ideas_heading = str(payload.get("ideasHeading", "")).strip() or f"10 Best {primary_keyword.title()} Ideas"
+    payload["ideasHeading"] = _truncate_words(ideas_heading, 12)
+
+    ideas = payload.get("ideas", [])
+    cleaned_ideas: list[dict[str, str]] = []
+    if isinstance(ideas, list):
+        for item in ideas:
             if not isinstance(item, dict):
                 continue
-            cleaned_h3.append(
-                {
-                    "title": _truncate_words(item.get("title", "Wedding styling note"), 8),
-                    "content": _truncate_words(item.get("content", ""), 80),
-                }
-            )
-        if not cleaned_h3:
-            cleaned_h3 = [{"title": "Wedding styling note", "content": "Choose details that feel emotionally intentional and visually clean."}]
-        section["h3Subsections"] = cleaned_h3
-
-    payload["finalThoughts"] = _truncate_words(payload.get("finalThoughts", ""), 90)
-    if not payload["finalThoughts"]:
-        payload["finalThoughts"] = (
-            "Great wedding gifting is not about buying more, it is about choosing with purpose. "
-            "When every piece reflects emotion and intention, the celebration feels elevated, personal, and unforgettable."
+            t = _truncate_words(str(item.get("title", "")).strip(), 10)
+            e = _truncate_words(str(item.get("explanation", "")).strip(), 45)
+            if t and e:
+                cleaned_ideas.append({"title": t, "explanation": e})
+    while len(cleaned_ideas) < 10:
+        idx = len(cleaned_ideas) + 1
+        cleaned_ideas.append(
+            {
+                "title": f"Idea {idx}: Personalized minimalist keepsake",
+                "explanation": "Use premium materials, clean typography, and recipient-specific personalization so the gift feels elevated and wedding-photo ready.",
+            }
         )
+    payload["ideas"] = cleaned_ideas[:12]
+
+    payload["budgetGuide"] = _truncate_words(str(payload.get("budgetGuide", "")).strip(), 160)
+    payload["luxuryVsMinimalist"] = _truncate_words(str(payload.get("luxuryVsMinimalist", "")).strip(), 220) or (
+        "Modern brides are choosing minimalist gifts with premium finishes over loud, overly themed products. This blend gives a luxury feel while staying timeless, giftable, and easy to style for wedding content."
+    )
+
+    faq = payload.get("faq", [])
+    cleaned_faq: list[dict[str, str]] = []
+    if isinstance(faq, list):
+        for item in faq:
+            if not isinstance(item, dict):
+                continue
+            q = _truncate_words(str(item.get("question", "")).strip(), 14)
+            a = _truncate_words(str(item.get("answer", "")).strip(), 55)
+            if q and a:
+                cleaned_faq.append({"question": q, "answer": a})
+    while len(cleaned_faq) < 3:
+        n = len(cleaned_faq) + 1
+        cleaned_faq.append(
+            {
+                "question": f"What are the best {primary_keyword} for USA weddings?",
+                "answer": "Choose gifts that balance personalization, practical use, and visual consistency with your wedding palette.",
+            }
+        )
+    payload["faq"] = cleaned_faq[:3]
+
+    payload["finalThoughts"] = _truncate_words(str(payload.get("finalThoughts", "")).strip(), 90) or (
+        "Great wedding gifting is intentional. When every detail reflects care, your celebration feels more personal, more memorable, and more aligned with the love story you are building."
+    )
 
     call_to_action = str(payload.get("callToAction", "")).strip()
     if "https://www.etsy.com/shop/ZuzuMood" not in call_to_action:
-        call_to_action = (
-            "Explore the ZuzuMood Etsy collection for minimalist wedding gifts crafted for intentional, meaningful celebration: "
-            "https://www.etsy.com/shop/ZuzuMood"
-        )
+        call_to_action = "Explore ZuzuMood's Etsy collection for minimalist wedding keepsakes: https://www.etsy.com/shop/ZuzuMood"
     payload["callToAction"] = call_to_action
 
-    payload["pinterestPinDescription"] = _truncate_words(payload.get("pinterestPinDescription", ""), 60)
-    if not payload["pinterestPinDescription"]:
-        payload["pinterestPinDescription"] = (
-            "USA brides are choosing intentional bridal gifts with minimalist luxury styling. "
-            "Save this guide for bridesmaid proposals, mother-of-the-bride moments, and meaningful wedding morning details."
-        )
-
-    tiktok_hook = _truncate_words(payload.get("tiktokHook", ""), 14)
-    if not tiktok_hook:
-        tiktok_hook = "Your wedding gifts should feel as intentional as your vows."
-    payload["tiktokHook"] = tiktok_hook
+    payload["pinterestPinDescription"] = _truncate_words(str(payload.get("pinterestPinDescription", "")).strip(), 70) or (
+        "Looking for bridesmaid proposal gifts and wedding keepsakes that feel premium and personal? Save this USA-focused guide for minimalist, meaningful ideas brides actually buy."
+    )
+    payload["tiktokHook"] = _truncate_words(str(payload.get("tiktokHook", "")).strip(), 14) or "The bridesmaid gift trend every USA bride is saving right now."
 
     image_suggestions = payload.get("imageSuggestions", [])
-    if not isinstance(image_suggestions, list):
-        image_suggestions = []
     cleaned_images: list[dict[str, str]] = []
-    for suggestion in image_suggestions[:5]:
-        if not isinstance(suggestion, dict):
-            continue
-        cleaned_images.append(
-            {
-                "description": _truncate_words(suggestion.get("description", "Wedding gift flatlay with premium minimalist styling"), 20),
-                "altText": _truncate_words(suggestion.get("altText", "USA bridal gifts wedding morning gift ideas"), 20),
-            }
-        )
+    if isinstance(image_suggestions, list):
+        for suggestion in image_suggestions[:5]:
+            if not isinstance(suggestion, dict):
+                continue
+            cleaned_images.append(
+                {
+                    "description": _truncate_words(str(suggestion.get("description", "Wedding gift flatlay with premium minimalist styling")), 20),
+                    "altText": _truncate_words(str(suggestion.get("altText", "USA wedding gift ideas for bridesmaids and bridal party")), 18),
+                }
+            )
     while len(cleaned_images) < 3:
-        idx = len(cleaned_images) + 1
+        i = len(cleaned_images) + 1
         cleaned_images.append(
             {
-                "description": f"Minimalist bridal gifting visual concept {idx}",
-                "altText": f"USA bridal gifts trend inspired wedding image {idx}",
+                "description": f"Minimalist wedding gift concept {i}",
+                "altText": f"USA {primary_keyword} inspiration {i}",
             }
         )
     payload["imageSuggestions"] = cleaned_images[:5]
 
     return payload
+
 
 def generate_cover_image(client: genai.Client, prompt: str, output_path: Path) -> bool:
     response = client.models.generate_content(
@@ -485,62 +516,103 @@ def generate_cover_image(client: genai.Client, prompt: str, output_path: Path) -
 def to_markdown(payload: dict[str, Any], date_iso: str, image_path: str) -> str:
     title = str(payload.get("title", "")).strip()
     meta_description = str(payload.get("metaDescription", "")).strip()
-    opening_hook = str(payload.get("openingHook", "")).strip()
-    sections = payload.get("h2Sections", [])
+    slug = str(payload.get("slug", "")).strip()
+    primary_keyword = str(payload.get("primaryKeyword", "")).strip()
+    secondary_keywords = payload.get("secondaryKeywords", [])
 
     lines = [
         "---",
         f"title: {json.dumps(title, ensure_ascii=False)}",
         f"meta_description: {json.dumps(meta_description, ensure_ascii=False)}",
-        f"slug: {json.dumps(str(payload.get('slug', '')), ensure_ascii=False)}",
-        f"date: {date_iso}",
-        f"tags: {json.dumps(payload.get('tags', []), ensure_ascii=False)}",
-        f"description: {json.dumps(meta_description, ensure_ascii=False)}",
-        f"image: {image_path}",
-        f"highVolumeKeywords: {json.dumps(payload.get('highVolumeKeywords', []), ensure_ascii=False)}",
-        f"longTailKeywords: {json.dumps(payload.get('longTailKeywords', []), ensure_ascii=False)}",
-        f"trendingAngles: {json.dumps(payload.get('trendingAngles', []), ensure_ascii=False)}",
-        "locale: en-US",
-        "region: us",
-        "category: wedding-gift-trends",
+        f"slug: {json.dumps(slug, ensure_ascii=False)}",
+        f"date: {json.dumps(date_iso, ensure_ascii=False)}",
+        f"primary_keyword: {json.dumps(primary_keyword, ensure_ascii=False)}",
+        f"secondary_keywords: {json.dumps(secondary_keywords, ensure_ascii=False)}",
         "---",
         "",
         f"# {title}",
         "",
-        opening_hook,
+        str(payload.get("intro", "")).strip(),
+        "",
+        "## Why This Gift Trend Is Rising in 2026",
+        "",
+        str(payload.get("whyTrendRising", "")).strip(),
         "",
     ]
 
-    for section in sections:
+    usa_trending_now = str(payload.get("usaTrendingNow", "")).strip()
+    if usa_trending_now:
         lines.extend(
             [
-                f"## {str(section.get('heading', '')).strip()}",
+                "## Why This Is Trending in the USA Right Now",
                 "",
-                str(section.get("content", "")).strip(),
+                usa_trending_now,
                 "",
             ]
         )
-        for subsection in section.get("h3Subsections", []):
-            lines.extend(
-                [
-                    f"### {str(subsection.get('title', '')).strip()}",
-                    "",
-                    str(subsection.get("content", "")).strip(),
-                    "",
-                ]
-            )
 
     lines.extend(
         [
-            "---",
+            f"## How to Choose the Perfect {primary_keyword.title()}",
             "",
-            "## Image Suggestions",
+            str(payload.get("chooseGuide", "")).strip(),
             "",
-            *[
-                f"{idx}. {item.get('description', '').strip()}  \nALT Text: \"{item.get('altText', '').strip()}\""
-                for idx, item in enumerate(payload.get("imageSuggestions", []), start=1)
-            ],
+            f"## {str(payload.get('ideasHeading', '')).strip()}",
             "",
+        ]
+    )
+
+    for idx, item in enumerate(payload.get("ideas", []), start=1):
+        lines.extend(
+            [
+                f"{idx}. **{str(item.get('title', '')).strip()}** — {str(item.get('explanation', '')).strip()}",
+            ]
+        )
+    lines.append("")
+
+    budget_guide = str(payload.get("budgetGuide", "")).strip()
+    if budget_guide:
+        lines.extend(
+            [
+                "## Budget Guide",
+                "",
+                budget_guide,
+                "",
+            ]
+        )
+
+    lines.extend(
+        [
+            "## Luxury vs Minimalist: What Modern Brides Prefer",
+            "",
+            str(payload.get("luxuryVsMinimalist", "")).strip(),
+            "",
+            "## FAQ",
+            "",
+        ]
+    )
+
+    for item in payload.get("faq", []):
+        lines.extend(
+            [
+                f"### {str(item.get('question', '')).strip()}",
+                str(item.get("answer", "")).strip(),
+                "",
+            ]
+        )
+
+    lines.extend(["---", "", "## Image Suggestions", ""])
+    for idx, item in enumerate(payload.get("imageSuggestions", []), start=1):
+        lines.extend(
+            [
+                f"{idx}. {str(item.get('description', '')).strip()}  ",
+                f"   ALT: \"{str(item.get('altText', '')).strip()}\"",
+                "",
+            ]
+        )
+
+    lines.extend(
+        [
             "---",
             "",
             "## Final Thoughts",
@@ -572,6 +644,7 @@ def to_markdown(payload: dict[str, Any], date_iso: str, image_path: str) -> str:
     if word_count < MIN_WORDS or word_count > HARD_MAX_WORDS:
         raise ValueError(f"Generated markdown word count out of expected range: {word_count}")
     return markdown
+
 
 def update_index(slug: str, title: str, summary: str, date_iso: str, image_path: str) -> None:
     entries: list[dict[str, str]] = []
