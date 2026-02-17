@@ -46,8 +46,14 @@ export const Header: React.FC = () => {
     <>
       <div className="fixed w-full z-50">
         {/* Top bar */}
-        <div className="bg-black text-white text-[8px] py-1.5 text-center font-bold tracking-[0.4em] uppercase">
-          Curating the Soul Archive • Redefining Minimalist Luxury
+        <div className="bg-black text-white text-[8px] py-1.5 text-center font-bold tracking-[0.4em] uppercase px-4">
+          <div className="flex items-center justify-center gap-3 md:gap-4 flex-wrap">
+            <span>Curating the Soul Archive</span>
+            <span aria-hidden="true">•</span>
+            <Link to="/blog" className="underline underline-offset-4 decoration-white/60 hover:decoration-white transition-colors">
+              Daily Blog
+            </Link>
+          </div>
         </div>
 
         <header className={`transition-all duration-700 ease-in-out ${
