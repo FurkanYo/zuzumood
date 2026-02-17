@@ -39,6 +39,7 @@ MAX_NEWS = 24
 SELECTED_NEWS = 10
 MIN_WORDS = 1500
 MAX_WORDS = 2200
+HARD_MIN_WORDS = max(1200, MIN_WORDS - 150)
 HARD_MAX_WORDS = MAX_WORDS + 400
 
 CONTENT_TYPES = [
@@ -698,7 +699,7 @@ def to_markdown(payload: dict[str, Any], date_iso: str, image_path: str) -> str:
 
     markdown = "\n".join(lines).strip() + "\n"
     word_count = len(re.findall(r"\b\w+\b", markdown))
-    if word_count < MIN_WORDS or word_count > HARD_MAX_WORDS:
+    if word_count < HARD_MIN_WORDS or word_count > HARD_MAX_WORDS:
         raise ValueError(f"Generated markdown word count out of expected range: {word_count}")
     return markdown
 
