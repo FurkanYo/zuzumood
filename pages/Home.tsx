@@ -37,6 +37,15 @@ export const Home: React.FC = () => {
           <p className="text-2xl md:text-4xl font-serif italic leading-relaxed mb-12">
             "ZuzuMood is a curated 'Soul Archive' born in Texas. We design wearable reminders for bold spirits, ensuring every original design helps you pause, reflect, and reconnect."
           </p>
+          <p className="text-base md:text-lg text-gray-700 mb-10">
+            ZuzuMood&apos;un güzel ve anlamlı parçalar yaratma felsefesiyle mükemmel bir şekilde örtüşüyor.
+          </p>
+          <img
+            src="/blog/ChatGPT%20Image%2013%20%C5%9Eub%202026%2000_02_21.png"
+            alt="ZuzuMood brand philosophy visual"
+            className="mx-auto w-full max-w-2xl rounded-sm mb-12"
+            loading="lazy"
+          />
           <div className="flex flex-col items-center">
             <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-black mb-1">Zuleyha Akkan</span>
             <span className="text-[8px] text-muted uppercase tracking-widest italic">In-House Design Director • Texas, USA</span>
