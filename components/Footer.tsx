@@ -42,12 +42,20 @@ export const Footer: React.FC = () => {
             <span className="text-black">English (US)</span>
             <div className="flex items-center gap-2 tracking-[0.28em] text-gray-400">
               <span>Powered by</span>
-              <img
-                src="/fures.png"
-                alt="Fures"
-                className="h-5 w-auto max-w-[88px] object-contain opacity-80"
-                loading="lazy"
-              />
+              <a
+                href="https://fures.at"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Visit Fures"
+                className="inline-flex items-center transition-opacity hover:opacity-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
+              >
+                <img
+                  src="/fures.png"
+                  alt="Fures"
+                  className="h-5 w-auto max-w-[88px] object-contain opacity-80"
+                  loading="lazy"
+                />
+              </a>
             </div>
           </div>
         </div>
