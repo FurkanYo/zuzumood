@@ -483,3 +483,14 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
 - SEO/Sitemap kontrolü:
   - Yeni route veya indekslenebilir sayfa eklenmedi.
   - `public/sitemap.xml` kontrol edildi; güncelleme gerekmedi.
+
+## Son Görev Özeti (2026-05-11 / Footer Fures Linki)
+- Kullanıcı geri bildirimi:
+  - Footer'daki `Powered by` yanında görünen Fures logosuna/tanıtım alanına basıldığında `fures.at` sitesinin açılması istendi.
+- Yapılanlar:
+  - `components/Footer.tsx` içinde Fures logosu `https://fures.at` adresine giden yeni sekmede açılan erişilebilir bir link ile sarıldı.
+  - Link için `aria-label`, hover opacity ve klavye focus ring sınıfları eklendi; görsel boyutu ve lazy-load davranışı korundu.
+- Beklenen sonuç:
+  - Footer'daki Fures logosuna tıklayan kullanıcı yeni sekmede `https://fures.at` adresine yönlenir.
+- SEO/Sitemap kontrolü:
+  - Yeni route veya indekslenebilir sayfa eklenmediği için `public/sitemap.xml` güncellemesi gerekmedi.
