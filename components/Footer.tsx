@@ -35,11 +35,20 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        <div className="pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center text-[8px] font-bold uppercase tracking-[0.5em] text-muted">
+        <div className="pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6 text-[8px] font-bold uppercase tracking-[0.5em] text-muted">
           <span>© 2025 ZuzuMood Studio • Proudly Based in Texas • Fulfilled by Etsy.</span>
-          <div className="mt-4 md:mt-0 flex space-x-8">
+          <div className="flex flex-col items-center gap-4 md:mt-0 md:flex-row md:space-x-8 md:gap-0">
             <a href="https://www.etsy.com/shop/ZuzuMood" target="_blank" rel="noreferrer" className="hover:text-black transition-colors">Etsy Shop</a>
             <span className="text-black">English (US)</span>
+            <div className="flex items-center gap-2 tracking-[0.28em] text-gray-400">
+              <span>Powered by</span>
+              <img
+                src="/fures.png"
+                alt="Fures"
+                className="h-5 w-auto max-w-[88px] object-contain opacity-80"
+                loading="lazy"
+              />
+            </div>
           </div>
         </div>
       </div>
