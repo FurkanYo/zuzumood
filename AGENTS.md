@@ -468,3 +468,18 @@ Bu doküman, bu proje üzerinde çalışacak bir sonraki yapay zeka ajanı için
 - SEO/Sitemap kontrolü:
   - Yeni route eklenmedi.
   - `public/sitemap.xml` ve `public/robots.txt` kontrol edildi; sitemap bildirimi `https://zuzumood.com/sitemap.xml` olarak doğru.
+
+## Son Görev Özeti (2026-05-11 / Footer Powered by Fures Logo Ekleme)
+- Kullanıcı geri bildirimi:
+  - `public` klasöründeki `fures.png` logosunun sayfanın alt kısmında küçük şekilde görünmesi istendi.
+  - Footer'da metin olarak `Fures` yazmak yerine doğrudan logo kullanılması talep edildi.
+- Yapılanlar:
+  - `components/Footer.tsx` içindeki alt footer aksiyon satırına `Powered by` etiketi ve `/fures.png` logo görseli eklendi.
+  - Logo orijinal dosya boyutu büyük olduğu için (`3500 × 1440`) arayüzde küçük, oranı korunmuş ve lazy-load edilen bir görsel olarak sınırlandı.
+  - Footer alt satırında mobil/desktop hizalama için `gap` ve responsive flex düzeni sadeleştirildi.
+- Beklenen sonuç:
+  - Sayfanın en altında küçük bir `Powered by` ibaresi ve yanında Fures logosu görünür.
+  - Logo metin yerine görsel olarak kullanılır ve footer'ın genel minimal görünümünü bozmaz.
+- SEO/Sitemap kontrolü:
+  - Yeni route veya indekslenebilir sayfa eklenmedi.
+  - `public/sitemap.xml` kontrol edildi; güncelleme gerekmedi.
